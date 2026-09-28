@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IG Outreach Assistant</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <div class="popup-header">
+      <div class="brand">
+        <span class="brand-icon">⚡</span>
+        <div>
+          <h2>IG Outreach</h2>
+          <p>Safe Dispatcher</p>
+        </div>
+      </div>
+      <span class="status-indicator online" id="serverStatus" title="CRM Backend Connection">CRM Live</span>
+    </div>
+
+    <!-- Quota Card -->
+    <div class="quota-card">
+      <div class="quota-meta">
+        <span>Today's Safe Quota:</span>
+        <strong id="extQuotaText">0 / 20 DMs</strong>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="extProgressBar" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- Quick Tab Grabber -->
+    <div style="background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 8px; padding: 10px; margin-bottom: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <strong style="color: #06B6D4; font-size: 11px; text-transform: uppercase;">⚡ 1-Click Page Grabber</strong>
+      </div>
+      <button id="btnPopupGrab" style="width: 100%; background: linear-gradient(135deg, #0284C7, #06B6D4); color: #fff; border: none; border-radius: 6px; padding: 8px; font-weight: 700; font-size: 12px; cursor: pointer;">
+        📥 Grab All Leads on Current Tab
+      </button>
+      <div id="popupGrabStatus" style="font-size: 11px; color: #10B981; margin-top: 4px; text-align: center; display: none;"></div>
+    </div>
+
+    <!-- Next Queue Lead Info -->
+    <div class="next-lead-card" id="nextLeadCard">
+      <div class="card-title">NEXT PROSPECT IN QUEUE:</div>
+      <div class="target-user" id="extTargetUsername">@loading...</div>
+      <div class="message-preview" id="extMessagePreview">Loading message draft...</div>
+      <button class="btn-dispatch" id="btnExtDispatch">
+        🚀 Open Profile & Auto-Fill Pitch
+      </button>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-queue hidden" id="emptyQueue">
+      <p>🎉 Queue is currently empty or today's quota is reached!</p>
+      <a href="http://localhost:3000" target="_blank" class="btn-dashboard">Open CRM Dashboard</a>
+    </div>
+
+    <div class="popup-footer">
+      <a href="http://localhost:3000" target="_blank">Open CRM Dashboard (localhost:3000) ↗</a>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

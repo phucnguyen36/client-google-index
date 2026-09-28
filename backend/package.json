@@ -1,0 +1,14 @@
+{
+  "name": "ig-outreach-crm-backend",
+  "version": "1.0.0",
+  "description": "Backend for Instagram Semi-Automated Outreach CRM",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": ["instagram", "outreach", "crm", "automation"],
+  "author": "Antigravity",
+  "license": "MIT",
+  "type": "commonjs"
+}

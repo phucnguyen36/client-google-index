@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IG Outreach CRM - AI Personalizer & Safe Dispatcher</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h1>IG Outreach <span>CRM</span></h1>
+          <p class="subtitle">AI Personalizer & Safe Dispatcher</p>
+        </div>
+      </div>
+
+      <!-- Safe Quota Live Tracker -->
+      <div class="quota-badge" id="quotaBadge">
+        <div class="quota-info">
+          <div class="quota-label">
+            <span class="status-dot green" id="quotaDot"></span>
+            <span class="quota-title">Daily Safety Quota</span>
+          </div>
+          <div class="quota-numbers">
+            <strong id="quotaSent">0</strong> / <span id="quotaLimit">20</span> DMs
+          </div>
+        </div>
+        <div class="quota-bar-track">
+          <div class="quota-bar-fill green" id="quotaBarFill" style="width: 0%;"></div>
+        </div>
+        <div class="quota-hint" id="quotaHint">Account status: 100% Safe</div>
+      </div>
+
+      <!-- Human Pacing Cooldown Tracker -->
+      <div class="cooldown-badge" id="cooldownBadge" title="Meta Algorithm Human Pacing Timer">
+        <span class="cooldown-icon">⏱️</span>
+        <span id="cooldownText">Pacing: Ready</span>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-outline-cyan" id="btnOpenPasteExtract" title="Copy anything on Google Search or Instagram and paste here to auto-grab leads">
+          <span>📋 Paste from Google/IG</span>
+        </button>
+        <button class="btn btn-outline-cyan" id="btnOpenFindLeads">
+          <span>🔍 Find Leads by Keyword</span>
+        </button>
+        <button class="btn btn-secondary" id="btnOpenSettings">
+          <span>⚙️ Settings</span>
+        </button>
+        <button class="btn btn-primary" id="btnOpenAddLead">
+          <span>+ Add Lead</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-content">
+    <!-- Stat Summary Metric Cards -->
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Total Leads</div>
+        <div class="metric-value" id="metricTotal">0</div>
+        <div class="metric-desc">Across all campaigns</div>
+      </div>
+      <div class="metric-card highlight-cyan">
+        <div class="metric-label">Pending AI / Review</div>
+        <div class="metric-value" id="metricPending">0</div>
+        <div class="metric-desc">New & unapproved leads</div>
+      </div>
+      <div class="metric-card highlight-purple">
+        <div class="metric-label">Ready in Queue (Approved)</div>
+        <div class="metric-value" id="metricApproved">0</div>
+        <div class="metric-desc">Extension dispatch ready</div>
+      </div>
+      <div class="metric-card highlight-green">
+        <div class="metric-label">Sent Today</div>
+        <div class="metric-value" id="metricSentToday">0</div>
+        <div class="metric-desc" id="metricSentTotal">Total Sent: 0</div>
+      </div>
+      <div class="metric-card highlight-orange">
+        <div class="metric-label">Replied</div>
+        <div class="metric-value" id="metricReplied">0</div>
+        <div class="metric-desc" id="metricReplyRate">Reply Rate: 0%</div>
+      </div>
+    </section>
+
+    <!-- Toolbar & Filter Controls -->
+    <section class="toolbar-section">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search by username, name, or bio...">
+      </div>
+
+      <div class="filter-tabs" id="filterTabs">
+        <button class="tab-btn active" data-status="ALL">All</button>
+        <button class="tab-btn" data-status="NEW">New</button>
+        <button class="tab-btn" data-status="AI_GENERATED">AI Drafted</button>
+        <button class="tab-btn" data-status="APPROVED">Approved (Queue)</button>
+        <button class="tab-btn" data-status="SENT">Sent</button>
+        <button class="tab-btn" data-status="REPLIED">Replied</button>
+        <button class="tab-btn" data-status="SKIPPED">Skipped</button>
+      </div>
+
+      <!-- Follower & Sorting Toolbar Filters -->
+      <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <select id="filterFollowerTier" class="form-select" style="padding: 6px 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-secondary); border-radius: var(--radius-md); font-size: 0.8rem;">
+          <option value="ALL">👥 Followers: All Tiers</option>
+          <option value="OVER_1K" selected>🛡️ Qualified: > 1,000 Followers</option>
+          <option value="MICRO">🌱 Micro (1K - 15K)</option>
+          <option value="MID">🎯 Mid-Tier (15K - 75K)</option>
+          <option value="MACRO">⭐ Macro (> 75K)</option>
+          <option value="NANO">⚠️ Under 1K (< 1K / Junk)</option>
+        </select>
+
+        <select id="sortLeads" class="form-select" style="padding: 6px 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-secondary); border-radius: var(--radius-md); font-size: 0.8rem;">
+          <option value="DEFAULT">⚡ Sort: Default</option>
+          <option value="FOLLOWERS_DESC">📈 Followers: High ➔ Low</option>
+          <option value="FOLLOWERS_ASC">📉 Followers: Low ➔ High</option>
+        </select>
+      </div>
+
+      <div class="quick-batch-actions">
+        <button class="btn btn-outline-cyan" id="btnBatchGenerateAI">
+          <span>⚡ Batch Generate AI</span>
+        </button>
+        <button class="btn btn-outline-purple" id="btnDispatchNext">
+          <span>🚀 Dispatch Next (1-Click)</span>
+        </button>
+        <button class="btn btn-outline-danger" id="btnOpenClearLeads" title="Clear or remove leads to import fresh batch">
+          <span>🗑️ Clear Leads</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Leads Data Display (Cards / Table) -->
+    <section class="leads-container" id="leadsContainer">
+      <!-- Dynamically filled by app.js -->
+      <div class="empty-state">Loading leads...</div>
+    </section>
+  </main>
+
+  <!-- Modal: Find Leads by Keyword -->
+  <div class="modal-overlay" id="findLeadsModal">
+    <div class="modal-card" style="max-width: 800px;">
+      <div class="modal-header">
+        <h2>🔍 Discover Prospects by Keyword & Advanced Filters</h2>
+        <button class="close-btn" id="closeFindLeadsModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="findLeadsForm" style="display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px;">
+            <div class="form-group" style="margin: 0;">
+              <label>Target Keyword / Niche</label>
+              <input type="text" id="finderKeyword" placeholder="e.g. construction, fitness, real estate, dental..." value="construction" required>
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label>Market</label>
+              <select id="finderLanguage" class="form-select" style="width: 100%; padding: 10px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: var(--radius-md);">
+                <option value="EN">English (US/UK/Global)</option>
+                <option value="VI">Vietnamese (VN Creators)</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label>Quantity</label>
+              <select id="finderCount" class="form-select" style="width: 100%; padding: 10px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: var(--radius-md);">
+                <option value="5">5 Leads</option>
+                <option value="10" selected>10 Leads</option>
+                <option value="15">15 Leads</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Niche Preset Shortcuts -->
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button type="button" class="tab-btn shortcut-pill" data-kw="construction" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🏗️ Construction & Trades</button>
+            <button type="button" class="tab-btn shortcut-pill" data-kw="fitness coach" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🏋️ Fitness & Gym</button>
+            <button type="button" class="tab-btn shortcut-pill" data-kw="podcast clips" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🎙️ Podcasts</button>
+            <button type="button" class="tab-btn shortcut-pill" data-kw="real estate" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🏡 Real Estate</button>
+            <button type="button" class="tab-btn shortcut-pill" data-kw="saas founder" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">💻 SaaS & Tech</button>
+            <button type="button" class="tab-btn shortcut-pill" data-kw="cosmetic dentist" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🩺 Dental & Med</button>
+            <button type="button" class="tab-btn shortcut-pill" data-kw="car detailing" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🏎️ Automotive</button>
+            <button type="button" class="tab-btn shortcut-pill" data-kw="shopify brand" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🛍️ E-commerce</button>
+            <button type="button" class="tab-btn shortcut-pill" data-kw="video editor" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🎬 Video Creators</button>
+            <button type="button" class="tab-btn shortcut-pill" data-kw="content creator vietnam" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🇻🇳 VN Creators</button>
+          </div>
+
+          <!-- Advanced Filters Row: Followers & Activity Recency -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+            <div class="form-group" style="margin: 0;">
+              <label>👥 Follower Size Tier</label>
+              <select id="finderFollowerTier" class="form-select" style="width: 100%; padding: 9px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: var(--radius-md); font-size: 0.85rem;">
+                <option value="ALL">All Follower Sizes</option>
+                <option value="MICRO" selected>🌱 Micro (1K - 15K) ➜ High DM Reply Rate</option>
+                <option value="MID">🎯 Mid-Tier (15K - 75K) ➜ Ideal Retainer Clients</option>
+                <option value="MACRO">⭐ Macro (75K - 500K+) ➜ High Ticket / Agency</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin: 0;">
+              <label>🔥 Posting Frequency / Recency</label>
+              <select id="finderActivity" class="form-select" style="width: 100%; padding: 9px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: var(--radius-md); font-size: 0.85rem;">
+                <option value="ALL">All Active Creators</option>
+                <option value="TODAY" selected>🔥 Active Today / Last 24h (Daily Posters)</option>
+                <option value="WEEK">⚡ Active This Week (Consistent Posters)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button type="submit" class="btn btn-primary" id="btnExecuteSearch" style="flex: 1;">
+              ⚡ Discover Matching Creators
+            </button>
+          </div>
+
+          <!-- Shortcuts to live Instagram Searches with Extension Grabber -->
+          <div id="searchShortcutsContainer" style="background: rgba(6, 182, 212, 0.08); border: 1px dashed rgba(6, 182, 212, 0.3); border-radius: 8px; padding: 12px 14px; margin-top: 4px;">
+            <div style="font-size: 0.775rem; color: var(--accent-cyan); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+              <span>⚡</span> 1-Click Extension Grabber (Quét 50 - 100 Leads Thật):
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <a href="#" id="linkGoogleXray" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.775rem;">
+                🌐 Mở Google X-Ray Search (Extension tự gom 50+ leads) ↗
+              </a>
+              <a href="#" id="linkIgTag" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.775rem;">
+                📸 Mở Instagram Hashtag Explore ↗
+              </a>
+            </div>
+            <div style="font-size: 0.725rem; color: var(--text-muted); margin-top: 6px; line-height: 1.4;">
+              💡 <em>Mẹo: Khi bấm vào Google X-Ray hoặc Instagram, Extension sẽ hiện nút nổi <strong>"📥 Grab All Leads to CRM"</strong> ở góc dưới để gom 50+ tài khoản vào CRM chỉ với 1 click!</em>
+            </div>
+          </div>
+        </form>
+
+        <!-- Discovered Leads List -->
+        <div id="finderResultsArea" style="margin-top: 16px; display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+            <strong style="font-size: 0.85rem; color: var(--text-primary);">Found <span id="finderFoundCount">0</span> Qualified Creators:</strong>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <label style="font-size: 0.775rem; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                <input type="checkbox" id="finderReplaceExisting"> 🔄 Clear existing leads first
+              </label>
+              <button class="btn btn-outline-cyan btn-sm" id="btnImportAllFound">
+                📥 Import Selected & Auto-Draft AI
+              </button>
+            </div>
+          </div>
+          <div id="finderResultsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto;">
+            <!-- Injected by app.js -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Clear / Remove Leads Confirmation -->
+  <div class="modal-overlay" id="clearLeadsModal">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h2 style="color: var(--accent-red); display: flex; align-items: center; gap: 8px;">
+          <span>🗑️</span> Remove / Clear Leads
+        </h2>
+        <button class="close-btn" id="closeClearLeadsModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5;">
+          Chọn nhóm leads bạn muốn loại bỏ để làm sạch danh sách và nạp đợt leads mới:
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+          <label class="clear-option-card" style="display: flex; gap: 12px; padding: 12px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); cursor: pointer;">
+            <input type="radio" name="clearScope" value="ALL" checked style="margin-top: 3px;">
+            <div>
+              <strong style="color: var(--text-primary); font-size: 0.9rem; display: block;">⚡ Clear All Leads (Xóa toàn bộ)</strong>
+              <span style="font-size: 0.775rem; color: var(--text-muted);">Xóa 100% danh sách leads hiện tại để bắt đầu mới hoàn toàn.</span>
+            </div>
+          </label>
+
+          <label class="clear-option-card" style="display: flex; gap: 12px; padding: 12px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); cursor: pointer;">
+            <input type="radio" name="clearScope" value="NEW_OR_UNAPPROVED" style="margin-top: 3px;">
+            <div>
+              <strong style="color: var(--text-primary); font-size: 0.9rem; display: block;">📦 Clear Only New / Pending (Chỉ xóa leads chưa gửi)</strong>
+              <span style="font-size: 0.775rem; color: var(--text-muted);">Giữ lại các lead đã gửi (Sent/Replied) để lưu lịch sử, chỉ xóa lead chưa gửi.</span>
+            </div>
+          </label>
+
+          <label class="clear-option-card" style="display: flex; gap: 12px; padding: 12px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); cursor: pointer;">
+            <input type="radio" name="clearScope" value="SENT_OR_SKIPPED" style="margin-top: 3px;">
+            <div>
+              <strong style="color: var(--text-primary); font-size: 0.9rem; display: block;">🧹 Clear Sent & Skipped (Dọn dẹp leads đã gửi / bỏ qua)</strong>
+              <span style="font-size: 0.775rem; color: var(--text-muted);">Xóa các lead đã gửi xong hoặc đã bỏ qua để giải phóng không gian CRM.</span>
+            </div>
+          </label>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button class="btn btn-secondary" id="btnCancelClearLeads">Hủy bỏ</button>
+          <button class="btn btn-danger" id="btnConfirmClearLeads">Xác nhận xóa</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Lead (Single / Bulk) -->
+  <div class="modal-overlay" id="addLeadModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Add Target Prospects (Leads)</h2>
+        <button class="close-btn" id="closeAddLeadModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-tabs">
+          <button class="form-tab-btn active" id="tabSingleMode">Single Profile</button>
+          <button class="form-tab-btn" id="tabBulkMode">Bulk Import</button>
+        </div>
+
+        <!-- Single Form -->
+        <form id="singleLeadForm" class="lead-form">
+          <div class="form-group">
+            <label>Instagram Username *</label>
+            <div class="input-with-prefix">
+              <span>@</span>
+              <input type="text" id="singleUsername" placeholder="username_without_at" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Display Name / Niche Title</label>
+            <input type="text" id="singleFullName" placeholder="e.g. Austin | Online Fitness Coach">
+          </div>
+          <div class="form-group">
+            <label>Profile Bio</label>
+            <textarea id="singleBio" rows="2" placeholder="Paste creator bio here..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Recent Post / Reel Caption (For hyper-personalized AI hook)</label>
+            <textarea id="singlePostCaption" rows="2" placeholder="e.g. The #1 mistake people make when prepping high-protein meals..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Save Lead & Auto-Generate AI Pitch</button>
+        </form>
+
+        <!-- Bulk Form -->
+        <form id="bulkLeadForm" class="lead-form hidden">
+          <div class="form-group">
+            <label>Paste List (One username per line)</label>
+            <textarea id="bulkInput" rows="7" placeholder="austinkoepp_fitness&#10;marcus_saasbuilder&#10;sarah_realestate_la"></textarea>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+              <span class="field-hint">The system automatically strips '@' and prepares records for batch AI drafting.</span>
+              <label style="font-size: 0.775rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                <input type="checkbox" id="bulkReplaceExisting"> 🔄 Clear existing first
+              </label>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Import All Leads</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Paste & Extract Leads from Google / Web -->
+  <div class="modal-overlay" id="pasteExtractModal">
+    <div class="modal-card" style="max-width: 580px;">
+      <div class="modal-header">
+        <h2 style="display: flex; align-items: center; gap: 8px;">
+          <span>📋</span> Quick Paste Leads from Google / Instagram
+        </h2>
+        <button class="close-btn" id="closePasteExtractModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 0.825rem; color: var(--text-secondary); line-height: 1.5;">
+          💡 <strong>Cách dùng siêu nhanh:</strong><br>
+          1. Sang tab Google Search (hoặc Instagram), nhấn <strong>Ctrl + A</strong> rồi <strong>Ctrl + C</strong>.<br>
+          2. Dán toàn bộ vào ô bên dưới $\to$ Hệ thống tự động lọc ra tất cả các tài khoản Instagram thật!
+        </div>
+
+        <div class="form-group">
+          <label>Dán nội dung bất kỳ từ Google Search hoặc Instagram vào đây:</label>
+          <textarea id="pasteExtractInput" rows="7" placeholder="Nhấn Ctrl + V để dán toàn bộ trang Google Search vào đây..."></textarea>
+        </div>
+
+        <div id="pasteExtractPreview" style="margin-bottom: 14px; font-size: 0.825rem; color: var(--accent-cyan); display: none;">
+          ⚡ Phát hiện: <strong id="pasteExtractCount" style="color: var(--accent-green); font-size: 1rem;">0</strong> tài khoản Instagram hợp lệ.
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label style="font-size: 0.775rem; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; cursor: pointer;">
+            <input type="checkbox" id="pasteReplaceExisting"> 🔄 Xóa danh sách cũ trước khi nạp
+          </label>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary" id="btnCancelPasteExtract">Hủy</button>
+            <button class="btn btn-primary" id="btnConfirmPasteExtract">📥 Nạp Leads vào CRM</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Meta Algorithm & Safety Settings</h2>
+        <button class="close-btn" id="closeSettingsModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="settingsForm">
+          <div class="form-group">
+            <label>Account Age / Warm-up Stage</label>
+            <select id="settingWarmupStage" class="form-select" style="width: 100%; padding: 10px 14px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: var(--radius-md); font-size: 0.9rem;">
+              <option value="NEW">🟢 New Account (< 1 month) ➜ Safe Cap: 7 DMs/day (90s Cooldown)</option>
+              <option value="WARMING" selected>🟡 Warming Up (1 – 6 months) ➜ Safe Cap: 15 DMs/day (60s Cooldown)</option>
+              <option value="AGED">🔵 Aged Account (> 6 months) ➜ Safe Cap: 25 DMs/day (45s Cooldown)</option>
+            </select>
+            <span class="field-hint">Selecting a preset automatically aligns your daily limit with Meta's spam thresholds.</span>
+          </div>
+
+          <div class="form-group">
+            <label>Daily Safe Sending Limit (DMs / Day)</label>
+            <input type="number" id="settingDailyLimit" min="5" max="50" value="15" required>
+            <span class="field-hint">Cap to prevent Meta Action Blocks. Max recommended: 25/day.</span>
+          </div>
+
+          <div class="form-group">
+            <label>Google Gemini API Key (Optional - Hyper-Personalization)</label>
+            <input type="password" id="settingGeminiKey" placeholder="AIzaSy...">
+            <span class="field-hint">If left empty, the built-in English Spintax Engine generates high-converting pitches for free.</span>
+          </div>
+
+          <div class="form-group">
+            <label>Your Offer / Service Value Proposition</label>
+            <input type="text" id="settingService" placeholder="High-retention Video Editing for Reels/TikToks (Hooks, Pacing & Sound FX)">
+          </div>
+
+          <div class="form-group">
+            <label>Outreach Tone & Style</label>
+            <input type="text" id="settingTone" placeholder="Casual, creator-to-creator, punchy, value-first, non-salesy">
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full">Save Settings</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+

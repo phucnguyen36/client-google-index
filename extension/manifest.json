@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "IG Safe Outreach Assistant",
+  "version": "1.0.0",
+  "description": "Safe 1-click Instagram outreach dispatcher and CRM synchronizer.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://www.instagram.com/*",
+    "https://*.google.com/*",
+    "https://*.google.com.vn/*",
+    "https://google.com/*",
+    "https://google.com.vn/*"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "IG Safe Outreach Assistant"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.instagram.com/*",
+        "https://*.google.com/*",
+        "https://*.google.com.vn/*",
+        "https://google.com/*",
+        "https://google.com.vn/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
