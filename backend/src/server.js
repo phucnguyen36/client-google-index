@@ -279,8 +279,9 @@ const server = http.createServer(async (req, res) => {
       const count = Math.min(Math.max(parseInt(body.count || 5, 10), 1), 25);
       const settings = getSettings();
 
+      const targetCountry = body.targetCountry || (language === 'VI' ? 'VI' : 'US');
       const discoveredLeads = await findLeadsByKeyword(keyword, language, count, followerTier, activityRecency, settings);
-      const shortcuts = getSearchShortcuts(keyword, followerTier, activityRecency);
+      const shortcuts = getSearchShortcuts(keyword, followerTier, activityRecency, targetCountry);
 
       return sendJSON(res, 200, {
         success: true,
@@ -311,9 +312,22 @@ const server = http.createServer(async (req, res) => {
       let insertedCount = 0;
       const insertedLeads = [];
 
+      const lowBudgetGeoPatterns = [
+        'india', 'delhi', 'mumbai', 'bangalore', 'bengaluru', 'hyderabad', 'pune', 
+        'chennai', 'noida', 'gurgaon', 'ahmedabad', 'kolkata', 'jaipur', 'pakistan', 
+        'nigeria', '+91', '+92', '+234', '.in/', '.in ', '.in.', 'rupee', '₹', 'lakh', 'crore', 'singam',
+        'startupsync.in'
+      ];
+
       for (const item of leads) {
         const cleanUser = (item.username || '').replace(/^@/, '').trim().toLowerCase();
         if (!cleanUser) continue;
+
+        // Skip non-Tier 1 / Indian spam
+        const textToCheck = `${cleanUser} ${item.full_name || ''} ${item.bio || ''} ${JSON.stringify(item.recent_posts || [])}`.toLowerCase();
+        if (lowBudgetGeoPatterns.some(p => textToCheck.includes(p))) {
+          continue; // Automatically filter out Indian / spam leads
+        }
 
         try {
           const postsJson = JSON.stringify(item.recent_posts || []);

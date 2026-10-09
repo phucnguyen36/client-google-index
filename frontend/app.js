@@ -818,8 +818,31 @@ closeFindLeadsModal.addEventListener('click', () => {
 
 function updateSearchShortcuts(keyword) {
   const clean = encodeURIComponent(keyword.trim());
-  const funnelOps = encodeURIComponent('("calendly.com" OR "book a call" OR "apply" OR "consultation" OR "skool.com" OR "link in bio")');
-  linkGoogleXray.href = `https://www.google.com/search?q=site:instagram.com+%22${clean}%22+${funnelOps}`;
+  const geo = finderLanguage ? finderLanguage.value : 'US';
+  
+  let positiveGeo = '("United States" OR "USA" OR "US" OR "NYC" OR "New York" OR "California" OR "Texas" OR "Austin" OR "Miami" OR "Florida" OR "Los Angeles" OR "San Francisco")';
+  if (geo === 'TIER1') {
+    positiveGeo = '("United States" OR "USA" OR "US" OR "California" OR "New York" OR "Texas" OR "London" OR "UK" OR "Canada" OR "Toronto" OR "Australia" OR "Sydney")';
+  } else if (geo === 'VI') {
+    positiveGeo = '("Vietnam" OR "Việt Nam" OR "Hà Nội" OR "Sài Gòn" OR "TPHCM")';
+  } else if (geo === 'GLOBAL') {
+    positiveGeo = '';
+  }
+
+  const negativeGeo = '-India -Delhi -Mumbai -Bangalore -Bengaluru -Hyderabad -Pune -Chennai -Noida -Gurgaon -Ahmedabad -Kolkata -Jaipur -Pakistan -Nigeria -"+91" -"+92" -".in"';
+  const funnelOps = '("calendly.com" OR "book a call" OR "apply" OR "consultation" OR "skool.com" OR "link in bio")';
+  const tier = finderFollowerTier ? finderFollowerTier.value : 'ALL';
+  let tierExtra = '("k followers" OR "m followers")';
+  if (tier === 'MICRO') tierExtra = '("1k..15k followers" OR "k followers")';
+  else if (tier === 'MID') tierExtra = '("15k..75k followers" OR "k followers")';
+  else if (tier === 'MACRO') tierExtra = '("100k.. followers" OR "m followers")';
+
+  const queryParts = [`site:instagram.com`, tierExtra, `"${keyword.trim()}"`, funnelOps];
+  if (positiveGeo) queryParts.push(positiveGeo);
+  if (geo !== 'GLOBAL' && geo !== 'VI') queryParts.push(negativeGeo);
+
+  const fullQuery = encodeURIComponent(queryParts.join(' '));
+  linkGoogleXray.href = `https://www.google.com/search?q=${fullQuery}&gl=us&hl=en&pws=0`;
   linkIgTag.href = `https://www.instagram.com/explore/tags/${clean.replace(/\+/g, '').replace(/%20/g, '')}/`;
   const linkMetaAds = document.getElementById('linkMetaAds');
   if (linkMetaAds) {
@@ -834,6 +857,11 @@ finderKeyword.addEventListener('input', () => {
 });
 
 finderFollowerTier.addEventListener('change', () => {
+  const kw = finderKeyword.value.trim();
+  if (kw) updateSearchShortcuts(kw);
+});
+
+finderLanguage.addEventListener('change', () => {
   const kw = finderKeyword.value.trim();
   if (kw) updateSearchShortcuts(kw);
 });
@@ -864,7 +892,7 @@ findLeadsForm.addEventListener('submit', async (e) => {
     const res = await fetch('/api/leads/find-by-keyword', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ keyword, language, count, followerTier, activityRecency })
+      body: JSON.stringify({ keyword, language, count, followerTier, activityRecency, targetCountry: language })
     });
 
     const data = await res.json();

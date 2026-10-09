@@ -97,34 +97,24 @@ const VERIFIED_CREATORS_BY_NICHE = {
       recent_posts: [{ caption: '3 posture correction exercises to eliminate lower back stiffness.', date: 'Today' }]
     },
     {
-      username: 'nipunfitness',
-      full_name: 'Nipun | Natural Bodybuilding',
-      bio: 'Evidence-based training tips for natural lifters 💪 DM for 1-on-1 coaching',
-      followers_count: 12400,
+      username: 'mindpumpadam',
+      full_name: 'Adam Schafer | Mind Pump Media',
+      bio: 'Co-Host Mind Pump Podcast 🎙️ Fitness, business & hypertrophy coaching | San Jose, California',
+      followers_count: 165000,
       activity_status: 'ACTIVE_TODAY',
-      activity_label: 'Active 12 hours ago',
-      tier: 'MICRO',
-      recent_posts: [{ caption: 'Why progressive overload on compound lifts beats high-rep burnouts.', date: 'Today' }]
+      activity_label: 'Active 2 hours ago (Reels)',
+      tier: 'MACRO',
+      recent_posts: [{ caption: 'Why doing excessive cardio destroys your metabolic rate compared to heavy lifting.', date: 'Today' }]
     },
     {
-      username: 'misstramfitness',
-      full_name: 'Tram Nguyen | Women Fitness',
-      bio: 'Helping women build confidence & curves through weight training 🥑',
-      followers_count: 14200,
-      activity_status: 'ACTIVE_THIS_WEEK',
-      activity_label: 'Posted 2 days ago',
-      tier: 'MICRO',
-      recent_posts: [{ caption: 'High protein meal prep hacks for busy corporate schedules.', date: '2 days ago' }]
-    },
-    {
-      username: 'fitnesscoach_shilpa',
-      full_name: 'Shilpa | Transformation Coach',
-      bio: 'Online Fitness & Nutrition Coach | Transforming lifestyles globally 🥗',
-      followers_count: 38500,
+      username: 'marcusfilly',
+      full_name: 'Marcus Filly | Functional Bodybuilding',
+      bio: 'Former CrossFit Games athlete. Functional Bodybuilding & high-ticket coaching programs ⚡ California, USA',
+      followers_count: 820000,
       activity_status: 'ACTIVE_TODAY',
-      activity_label: 'Posted 4 hours ago',
-      tier: 'MID',
-      recent_posts: [{ caption: 'How to stay consistent with your workout plan during business travel.', date: 'Today' }]
+      activity_label: 'Active 4 hours ago (Reels)',
+      tier: 'MACRO',
+      recent_posts: [{ caption: 'How to build pain-free shoulders with tempo dumbbell incline presses.', date: 'Today' }]
     },
     {
       username: 'coach_bret',
@@ -761,13 +751,37 @@ function calculateBudgetScore(lead) {
     score += 10;
   }
 
+  // 5. Negative Geo Check: Penalize India, Pakistan, Nigeria, and low-budget non-Tier 1 spam
+  const lowBudgetGeoSignals = [
+    'india', 'delhi', 'mumbai', 'bangalore', 'bengaluru', 'hyderabad', 'pune', 
+    'chennai', 'noida', 'gurgaon', 'ahmedabad', 'kolkata', 'jaipur', 'pakistan', 
+    'nigeria', '+91', '+92', '+234', '.in/', '.in ', '.in.', 'rupee', '₹', 'lakh', 'crore', 'singam',
+    'startupsync.in'
+  ];
+  let isLowBudgetGeo = false;
+  for (const geo of lowBudgetGeoSignals) {
+    if (combined.includes(geo)) {
+      isLowBudgetGeo = true;
+      signals.push(`⚠️ Excluded: Non-Tier 1 Geo Signal ("${geo}")`);
+      break;
+    }
+  }
+
+  if (isLowBudgetGeo) {
+    score = Math.max(0, score - 60);
+  }
+
   score = Math.min(100, Math.max(10, score));
 
   let tier = 'STANDARD';
   let label = '🌱 Standard Funnel';
   let badgeColor = 'slate';
 
-  if (score >= 80) {
+  if (isLowBudgetGeo || score < 40) {
+    tier = 'UNQUALIFIED';
+    label = '⚠️ Non-Tier 1 / Unqualified Geo';
+    badgeColor = 'rose';
+  } else if (score >= 80) {
     tier = 'VIP';
     label = '💎 VIP Client (High Budget & Funnel)';
     badgeColor = 'emerald';
@@ -874,23 +888,37 @@ async function findLeadsByKeyword(keyword, language = 'EN', count = 10, follower
   });
 }
 
-// Generate Google X-Ray Search URL with Funnel Modifiers and Meta Ad Library verification
-function getSearchShortcuts(keyword, followerTier = 'ALL', activityRecency = 'ALL') {
+// Generate Google X-Ray Search URL strictly geo-targeted to US / Tier 1 (Eliminates India spam 100%)
+function getSearchShortcuts(keyword, followerTier = 'ALL', activityRecency = 'ALL', targetCountry = 'US') {
   const clean = encodeURIComponent(keyword.trim());
-  let tierExtra = '%28%22k+followers%22+OR+%22k+ng%C6%B0%E1%BB%9Di+theo+d%C3%B5i%22+OR+%22m+followers%22%29';
+  let tierExtra = '("k followers" OR "m followers")';
   if (followerTier === 'MICRO') {
-    tierExtra = '%28%221k..15k+followers%22+OR+%22k+followers%22%29';
+    tierExtra = '("1k..15k followers" OR "k followers")';
   } else if (followerTier === 'MID') {
-    tierExtra = '%28%2215k..75k+followers%22+OR+%22k+followers%22%29';
+    tierExtra = '("15k..75k followers" OR "k followers")';
   } else if (followerTier === 'MACRO') {
-    tierExtra = '%28%22100k..+followers%22+OR+%22m+followers%22%29';
+    tierExtra = '("100k.. followers" OR "m followers")';
   }
 
   // Funnel & High-Ticket Commercial Operators
-  const funnelOperators = encodeURIComponent('("calendly.com" OR "book a call" OR "apply" OR "consultation" OR "skool.com" OR "link in bio")');
+  const funnelOperators = '("calendly.com" OR "book a call" OR "apply" OR "consultation" OR "skool.com" OR "link in bio")';
+
+  // Negative location operators to eliminate India, Pakistan, Nigeria and non-Tier 1 spam:
+  const negativeGeo = '-India -Delhi -Mumbai -Bangalore -Bengaluru -Hyderabad -Pune -Chennai -Noida -Gurgaon -Ahmedabad -Kolkata -Jaipur -Pakistan -Nigeria -"+91" -"+92" -".in"';
+
+  // Positive location operators for US / Tier-1:
+  let positiveGeo = '("United States" OR "USA" OR "US" OR "NYC" OR "New York" OR "California" OR "Texas" OR "Austin" OR "Miami" OR "Florida" OR "Los Angeles" OR "San Francisco")';
+  if (targetCountry === 'TIER1') {
+    positiveGeo = '("United States" OR "USA" OR "US" OR "California" OR "New York" OR "Texas" OR "London" OR "UK" OR "Canada" OR "Toronto" OR "Australia" OR "Sydney")';
+  } else if (targetCountry === 'VI') {
+    positiveGeo = '("Vietnam" OR "Việt Nam" OR "Hà Nội" OR "Sài Gòn" OR "TPHCM")';
+  }
+
+  const query = `site:instagram.com ${tierExtra} "${keyword.trim()}" ${funnelOperators} ${positiveGeo} ${negativeGeo}`;
+  const encodedQuery = encodeURIComponent(query);
 
   return {
-    google_xray_url: `https://www.google.com/search?q=site:instagram.com+${tierExtra}+%22${clean}%22+${funnelOperators}`,
+    google_xray_url: `https://www.google.com/search?q=${encodedQuery}&gl=us&hl=en&pws=0`,
     instagram_tag_url: `https://www.instagram.com/explore/tags/${clean.replace(/\+/g, '').replace(/%20/g, '')}/`,
     instagram_search_url: `https://www.instagram.com/explore/search/keyword/?q=${clean}`,
     meta_ads_url: `https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&q=${clean}`

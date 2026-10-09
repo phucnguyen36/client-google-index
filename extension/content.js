@@ -425,7 +425,31 @@ function scanGoogleLeads() {
       fullName = `@${clean}`;
     }
 
+    // Strict Geo Quality Filter: Reject India, Pakistan, Nigeria, and non-Tier 1 spam
+    const textToCheck = `${clean} ${fullName} ${bio || ''} ${caption || ''}`.toLowerCase();
+    const lowBudgetGeoPatterns = [
+      'india', 'delhi', 'mumbai', 'bangalore', 'bengaluru', 'hyderabad', 'pune', 
+      'chennai', 'noida', 'gurgaon', 'ahmedabad', 'kolkata', 'jaipur', 'pakistan', 
+      'nigeria', '+91', '+92', '+234', '.in/', '.in ', '.in.', 'rupee', '₹', 'lakh', 'crore', 'singam',
+      'startupsync.in'
+    ];
+    for (const pattern of lowBudgetGeoPatterns) {
+      if (textToCheck.includes(pattern)) {
+        return; // SKIP non-Tier 1 leads!
+      }
+    }
+
     const followers = typeof rawFollowers === 'number' ? rawFollowers : parseSnippetFollowers(bio || caption);
+
+    // Skip accounts under 1,000 followers (personal/hobbyist)
+    if (followers > 0 && followers < 1000) {
+      return;
+    }
+
+    // Skip empty cite tokens without real bio or content
+    if ((!bio || bio === 'Found via Google Cite' || bio === 'Found via Google Breadcrumb') && (!caption || caption.length < 5)) {
+      return;
+    }
 
     const funnelRegex = /(calendly\.com|tidycal|skool\.com|book a call|apply now|consultation|schedule|founder|dr\.|dentist|realtor|agency)/i;
     const funnelMatch = (bio + ' ' + caption + ' ' + fullName).match(funnelRegex);
