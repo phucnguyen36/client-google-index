@@ -396,12 +396,30 @@ function scanGoogleLeads() {
     const clean = cleanHandle(handle);
     if (!clean || uniqueLeads.has(clean)) return;
 
-    let fullName = (rawName || '')
-      .replace(/\s*\(@?[^)]+\)/g, '')
-      .replace(/•\s*Instagram.*$/i, '')
-      .replace(/on Instagram.*$/i, '')
-      .replace(/trên Instagram.*$/i, '')
-      .trim();
+    let fullName = '';
+    const rawTitle = (rawName || '').trim();
+    const isProfileTitle = /\(@?[^)]+\)|•\s*Instagram|(?:on|trên)\s+Instagram/i.test(rawTitle);
+
+    if (isProfileTitle) {
+      fullName = rawTitle
+        .replace(/\s*\(@?[^)]+\)/g, '')
+        .replace(/•\s*Instagram.*$/i, '')
+        .replace(/(?:on|trên)\s+Instagram.*$/i, '')
+        .trim();
+    }
+
+    // If fullName looks like a post caption (> 4 words or contains sentence punctuation), discard it
+    if (fullName && (fullName.split(/\s+/).length > 4 || /[#?!$%..."']/.test(fullName))) {
+      fullName = '';
+    }
+
+    // Try extracting display name from beginning of bio (e.g. "Shanarra | Creator, CEO")
+    if (!fullName && bio) {
+      const bioNameMatch = bio.match(/^([A-ZÀ-Ỹ][a-zA-ZÀ-ỹ\s]{1,22}?)\s*[|•]/);
+      if (bioNameMatch && bioNameMatch[1].trim().split(/\s+/).length <= 3) {
+        fullName = bioNameMatch[1].trim();
+      }
+    }
 
     if (!fullName || fullName.length < 2) {
       fullName = `@${clean}`;
@@ -409,10 +427,17 @@ function scanGoogleLeads() {
 
     const followers = typeof rawFollowers === 'number' ? rawFollowers : parseSnippetFollowers(bio || caption);
 
+    const funnelRegex = /(calendly\.com|tidycal|skool\.com|book a call|apply now|consultation|schedule|founder|dr\.|dentist|realtor|agency)/i;
+    const funnelMatch = (bio + ' ' + caption + ' ' + fullName).match(funnelRegex);
+    let enhancedBio = (bio || 'Discovered from Google Search').trim().slice(0, 300);
+    if (funnelMatch && !enhancedBio.toLowerCase().includes(funnelMatch[0].toLowerCase())) {
+      enhancedBio = `[Funnel: ${funnelMatch[0]}] ` + enhancedBio;
+    }
+
     uniqueLeads.set(clean, {
       username: clean,
       full_name: fullName,
-      bio: (bio || 'Discovered from Google Search').trim().slice(0, 300),
+      bio: enhancedBio,
       followers_count: followers,
       recent_posts: [{
         caption: (caption || bio || 'Recent Instagram content').trim().slice(0, 250),

@@ -5,8 +5,8 @@ const url = require('node:url');
 
 const { db } = require('./database/db');
 const { getTodayQuota, incrementSentCount, getSettings } = require('./services/quotaService');
-const { generateGeminiAIDraft } = require('./services/aiService');
-const { findLeadsByKeyword, getSearchShortcuts } = require('./services/leadFinderService');
+const { generateGeminiAIDraft, extractSmartFirstName } = require('./services/aiService');
+const { findLeadsByKeyword, getSearchShortcuts, calculateBudgetScore } = require('./services/leadFinderService');
 
 const PORT = process.env.PORT || 3000;
 const FRONTEND_DIR = path.join(__dirname, '../../frontend');
@@ -154,7 +154,18 @@ const server = http.createServer(async (req, res) => {
 
       sql += ' ORDER BY id DESC';
       const leads = db.prepare(sql).all(...params);
-      return sendJSON(res, 200, { success: true, leads });
+      const enrichedLeads = leads.map(l => {
+        const budget = calculateBudgetScore(l);
+        return {
+          ...l,
+          budget_score: budget.score,
+          budget_tier: budget.tier,
+          budget_label: budget.label,
+          budget_signals: budget.signals,
+          meta_ads_url: budget.metaAdsUrl
+        };
+      });
+      return sendJSON(res, 200, { success: true, leads: enrichedLeads });
     }
 
     // POST /api/leads (Single or Bulk)
@@ -239,17 +250,19 @@ const server = http.createServer(async (req, res) => {
 
     // POST /api/leads/generate-all-pending (Batch AI generation)
     if (pathname === '/api/leads/generate-all-pending' && method === 'POST') {
-      const pendingLeads = db.prepare("SELECT * FROM leads WHERE status = 'NEW' OR ai_draft IS NULL").all();
+      const pendingLeads = db.prepare("SELECT * FROM leads WHERE status IN ('NEW', 'AI_GENERATED') OR ai_draft IS NULL").all();
       const settings = getSettings();
       let generatedCount = 0;
 
       for (const lead of pendingLeads) {
         const draft = await generateGeminiAIDraft(lead, settings);
+        const smartName = extractSmartFirstName(lead);
+        const cleanDisplayName = smartName ? `${smartName} (@${lead.username})` : `@${lead.username}`;
         db.prepare(`
           UPDATE leads 
-          SET ai_draft = ?, status = 'AI_GENERATED', updated_at = CURRENT_TIMESTAMP
+          SET ai_draft = ?, full_name = ?, status = 'AI_GENERATED', updated_at = CURRENT_TIMESTAMP
           WHERE id = ?
-        `).run(draft, lead.id);
+        `).run(draft, cleanDisplayName, lead.id);
         generatedCount++;
       }
 
@@ -304,9 +317,13 @@ const server = http.createServer(async (req, res) => {
 
         try {
           const postsJson = JSON.stringify(item.recent_posts || []);
+          const tempLead = { username: cleanUser, full_name: item.full_name || '', bio: item.bio || '', recent_posts_json: postsJson };
+          const smartName = extractSmartFirstName(tempLead);
+          const cleanDisplayName = smartName ? `${smartName} (@${cleanUser})` : `@${cleanUser}`;
+
           const result = insertStmt.run(
             cleanUser,
-            item.full_name || cleanUser,
+            cleanDisplayName,
             item.bio || '',
             item.followers_count || 0,
             postsJson,
@@ -315,7 +332,7 @@ const server = http.createServer(async (req, res) => {
 
           const newId = Number(result.lastInsertRowid);
           insertedCount++;
-          insertedLeads.push({ id: newId, username: cleanUser, full_name: item.full_name || cleanUser, bio: item.bio || '', recent_posts_json: postsJson });
+          insertedLeads.push({ id: newId, username: cleanUser, full_name: cleanDisplayName, bio: item.bio || '', recent_posts_json: postsJson });
         } catch (e) {
           // Ignore duplicates
         }

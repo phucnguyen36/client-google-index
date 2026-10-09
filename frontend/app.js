@@ -127,6 +127,21 @@ function getFollowerTierBadge(count) {
   return `<span class="tier-tag macro" title="Macro Creator (75K+): High Reach / Agency Scale">⭐ ${formatNumber(c)}</span>`;
 }
 
+function getBudgetScoreBadge(score, tier, signals) {
+  const s = parseInt(score || 50, 10);
+  const signalsText = Array.isArray(signals) && signals.length > 0 
+    ? escapeHtml(signals.join(' • ')) 
+    : 'Score evaluated via booking funnel and commercial activity';
+
+  if (s >= 80) {
+    return `<span class="tier-tag macro" style="background: rgba(16, 185, 129, 0.18); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.45); font-weight: 700;" title="${signalsText}">💎 VIP [${s}/100]</span>`;
+  }
+  if (s >= 60) {
+    return `<span class="tier-tag mid" style="background: rgba(6, 182, 212, 0.18); color: #38BDF8; border: 1px solid rgba(6, 182, 212, 0.4); font-weight: 600;" title="${signalsText}">🎯 Potential [${s}/100]</span>`;
+  }
+  return `<span class="tier-tag" style="background: rgba(148, 163, 184, 0.12); color: #94A3B8; border: 1px solid rgba(148, 163, 184, 0.25);" title="${signalsText}">🌱 Standard [${s}/100]</span>`;
+}
+
 // Meta Algorithm Anti-Spam Safety Checker
 function getAntiSpamBadge(text) {
   if (!text || text.trim() === '') {
@@ -239,9 +254,11 @@ async function loadLeads() {
 
     leadsData = data.leads;
 
-    // Apply Client-Side Follower Tier Filter
+    // Apply Client-Side Follower Tier & High Budget Filter
     let filtered = leadsData;
-    if (currentFollowerTier === 'MICRO') {
+    if (currentFollowerTier === 'HIGH_BUDGET') {
+      filtered = filtered.filter(l => (l.budget_score || 0) >= 70);
+    } else if (currentFollowerTier === 'MICRO') {
       filtered = filtered.filter(l => (l.followers_count || 0) >= 1000 && (l.followers_count || 0) < 15000);
     } else if (currentFollowerTier === 'MID') {
       filtered = filtered.filter(l => (l.followers_count || 0) >= 15000 && (l.followers_count || 0) <= 75000);
@@ -254,7 +271,9 @@ async function loadLeads() {
     }
 
     // Apply Sorting
-    if (currentSort === 'FOLLOWERS_DESC') {
+    if (currentSort === 'BUDGET_DESC') {
+      filtered.sort((a, b) => (b.budget_score || 0) - (a.budget_score || 0));
+    } else if (currentSort === 'FOLLOWERS_DESC') {
       filtered.sort((a, b) => (b.followers_count || 0) - (a.followers_count || 0));
     } else if (currentSort === 'FOLLOWERS_ASC') {
       filtered.sort((a, b) => (a.followers_count || 0) - (b.followers_count || 0));
@@ -295,6 +314,7 @@ function renderLeads(leads) {
     const initialLetter = (lead.username || 'U')[0].toUpperCase();
     const safetyBadge = getAntiSpamBadge(lead.ai_draft);
     const followerBadge = getFollowerTierBadge(lead.followers_count || 12000);
+    const budgetBadge = getBudgetScoreBadge(lead.budget_score, lead.budget_tier, lead.budget_signals);
 
     return `
       <div class="lead-card" id="lead-card-${lead.id}">
@@ -305,6 +325,7 @@ function renderLeads(leads) {
             <div class="profile-names">
               <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                 <h3>${escapeHtml(lead.full_name || lead.username)}</h3>
+                ${budgetBadge}
                 ${followerBadge}
                 <span class="activity-tag">🔥 Active</span>
               </div>
@@ -360,6 +381,15 @@ function renderLeads(leads) {
             <button class="btn btn-primary btn-sm" onclick="dispatchDirect(${lead.id}, '${escapeHtml(lead.username)}')">
               🚀 1-Click IG Dispatch
             </button>
+
+            <a href="${escapeHtml(lead.meta_ads_url || `https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&q=${encodeURIComponent(lead.username)}`)}" 
+               target="_blank" 
+               rel="noopener" 
+               class="btn btn-secondary btn-sm" 
+               style="display: flex; align-items: center; justify-content: center; gap: 4px; text-decoration: none; border-color: rgba(59, 130, 246, 0.4); color: #60a5fa;"
+               title="Check Meta Ad Library: 100% proof if this client pays for ads!">
+              📢 Check Meta Ads ↗
+            </a>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
               <button class="btn btn-secondary btn-sm" onclick="updateLeadStatus(${lead.id}, 'REPLIED')">
@@ -788,9 +818,13 @@ closeFindLeadsModal.addEventListener('click', () => {
 
 function updateSearchShortcuts(keyword) {
   const clean = encodeURIComponent(keyword.trim());
-  const tier = finderFollowerTier.value;
-  linkGoogleXray.href = `https://www.google.com/search?q=site:instagram.com+%22${clean}%22+%22DM+for%22+OR+%22link+in+bio%22`;
+  const funnelOps = encodeURIComponent('("calendly.com" OR "book a call" OR "apply" OR "consultation" OR "skool.com" OR "link in bio")');
+  linkGoogleXray.href = `https://www.google.com/search?q=site:instagram.com+%22${clean}%22+${funnelOps}`;
   linkIgTag.href = `https://www.instagram.com/explore/tags/${clean.replace(/\+/g, '').replace(/%20/g, '')}/`;
+  const linkMetaAds = document.getElementById('linkMetaAds');
+  if (linkMetaAds) {
+    linkMetaAds.href = `https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&q=${clean}`;
+  }
   searchShortcutsContainer.style.display = 'block';
 }
 
@@ -841,6 +875,7 @@ findLeadsForm.addEventListener('submit', async (e) => {
 
       finderResultsList.innerHTML = data.leads.map((l, idx) => {
         const tierBadge = getFollowerTierBadge(l.followers_count || 12000);
+        const budgetBadge = getBudgetScoreBadge(l.budget_score, l.budget_tier, l.budget_signals);
         const activityBadge = l.activity_label ? `<span class="activity-tag">🔥 ${escapeHtml(l.activity_label)}</span>` : '<span class="activity-tag">🔥 Active</span>';
 
         return `
@@ -851,6 +886,7 @@ findLeadsForm.addEventListener('submit', async (e) => {
                   @${escapeHtml(l.username)} ↗
                 </a>
                 <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">(${escapeHtml(l.full_name || '')})</span>
+                ${budgetBadge}
                 ${tierBadge}
                 ${activityBadge}
               </div>
@@ -863,9 +899,14 @@ findLeadsForm.addEventListener('submit', async (e) => {
                 </div>
               ` : ''}
             </div>
-            <button class="btn btn-secondary btn-sm" onclick="importSingleDiscovered(${idx})" style="white-space: nowrap; font-size: 0.75rem;">
-              + Import
-            </button>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <a href="${escapeHtml(l.meta_ads_url || `https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&q=${encodeURIComponent(l.username)}`)}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 5px 8px; color: #60a5fa;" title="Check Meta Ads">
+                📢 Ads ↗
+              </a>
+              <button class="btn btn-secondary btn-sm" onclick="importSingleDiscovered(${idx})" style="white-space: nowrap; font-size: 0.75rem;">
+                + Import
+              </button>
+            </div>
           </div>
         `;
       }).join('');

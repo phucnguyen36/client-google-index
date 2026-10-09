@@ -231,44 +231,97 @@ const VERIFIED_CREATORS_BY_NICHE = {
     }
   ],
 
+  coaches: [
+    {
+      username: 'jasonphillips_hl',
+      full_name: 'Jason Phillips | NCI High-Ticket Coaching',
+      bio: 'Founder of NCI | Scaled coaching to $15M+ 📈 Apply for high-ticket certification at nci.com/apply | Calendly booking in bio',
+      followers_count: 78000,
+      activity_status: 'ACTIVE_TODAY',
+      activity_label: 'Posted 3 hours ago (Reels)',
+      tier: 'MID',
+      recent_posts: [{ caption: 'Why charging $3,000+ for high-ticket coaching delivers 10x better client results than low-cost courses.', date: 'Today' }]
+    },
+    {
+      username: 'thelukemintz',
+      full_name: 'Luke Mintz | B2B Sales & Growth',
+      bio: 'High Ticket Sales & Enterprise Consulting. Helping agency owners add $50k MRR 🚀 Calendly in bio to book a discovery call',
+      followers_count: 14200,
+      activity_status: 'ACTIVE_TODAY',
+      activity_label: 'Active 2 hours ago (Reels)',
+      tier: 'MICRO',
+      recent_posts: [{ caption: 'The 4-step discovery framework that closed $120k in high-ticket retainers this month.', date: 'Today' }]
+    },
+    {
+      username: 'bedroskeuilian',
+      full_name: 'Bedros Keuilian | CEO & Business Consultant',
+      bio: 'Serial entrepreneur, speaker & $100M business coach. Helping founders scale & lead ⚔️ Book consultation below',
+      followers_count: 420000,
+      activity_status: 'ACTIVE_TODAY',
+      activity_label: 'Active 5 hours ago (Reels)',
+      tier: 'MACRO',
+      recent_posts: [{ caption: '3 leadership traits that differentiate $10M CEOs from struggling operators.', date: 'Today' }]
+    },
+    {
+      username: 'danlok',
+      full_name: 'Dan Lok | High-Ticket Closer',
+      bio: 'Global entrepreneur & investor. High-ticket sales mastery & executive consulting 💎 Skool community & 1:1 mentorship in bio',
+      followers_count: 2100000,
+      activity_status: 'ACTIVE_THIS_WEEK',
+      activity_label: 'Posted yesterday (Reels)',
+      tier: 'MACRO',
+      recent_posts: [{ caption: 'Never sell features; sell the exact transformation and guaranteed outcome.', date: 'Yesterday' }]
+    }
+  ],
+
   saas: [
     {
       username: 'tibo_maker',
       full_name: 'Tibo | Micro-SaaS Builder',
-      bio: 'Bootstrapping apps to $100k MRR 🚀 Sharing daily marketing & retention breakdowns',
+      bio: 'Bootstrapping apps to $100k MRR 🚀 Sharing daily marketing & retention breakdowns | Book a demo via calendly link in bio',
       followers_count: 14500,
       activity_status: 'ACTIVE_TODAY',
-      activity_label: 'Active 2 hours ago',
+      activity_label: 'Active 2 hours ago (Reels)',
       tier: 'MICRO',
       recent_posts: [{ caption: 'How a single landing page redesign improved our free-to-paid conversion by 35%.', date: 'Today' }]
     },
     {
+      username: 'dannypostmaa',
+      full_name: 'Danny Postma | AI SaaS Founder',
+      bio: 'Founder of HeadshotPro ($5M+ ARR) 🤖 Building AI apps in public | Calendly in bio for partnerships & podcast inquiries',
+      followers_count: 48000,
+      activity_status: 'ACTIVE_TODAY',
+      activity_label: 'Active 3 hours ago (Reels)',
+      tier: 'MID',
+      recent_posts: [{ caption: 'Why video UGC ads consistently beat static graphic banners for AI SaaS conversion.', date: 'Today' }]
+    },
+    {
       username: 'arvidkahl',
       full_name: 'Arvid Kahl | Bootstrapped Founder',
-      bio: 'Author of Zero to Sold & The Embedded Entrepreneur | Building in public 📚',
+      bio: 'Author of Zero to Sold & The Embedded Entrepreneur | Bootstrapped SaaS exit 📚 Consultations & newsletter in bio',
       followers_count: 95000,
       activity_status: 'ACTIVE_TODAY',
-      activity_label: 'Active 4 hours ago',
+      activity_label: 'Active 4 hours ago (Reels)',
       tier: 'MID',
       recent_posts: [{ caption: 'Why finding your audience before building your product guarantees lower churn.', date: 'Today' }]
     },
     {
       username: 'levelsio',
       full_name: 'Pieter Levels | Indie Maker',
-      bio: 'Bootstrapping AI startups in public 🚀 Founder of NomadList, PhotoAI & RemoteOK',
+      bio: 'Bootstrapping AI startups in public 🚀 Founder of NomadList, PhotoAI & RemoteOK | Tech integrations & press inquiries',
       followers_count: 220000,
       activity_status: 'ACTIVE_TODAY',
-      activity_label: 'Active 1 hour ago',
+      activity_label: 'Active 1 hour ago (Reels)',
       tier: 'MACRO',
       recent_posts: [{ caption: 'How to ship AI products fast with minimal tech stack and zero VC funding.', date: 'Today' }]
     },
     {
       username: 'alexhormozi',
       full_name: 'Alex Hormozi | Acquisition.com',
-      bio: 'Scaling businesses from $1M to $100M+ | Author of $100M Offers & $100M Leads 📈',
+      bio: 'Scaling businesses from $1M to $100M+ | Author of $100M Offers & $100M Leads 📈 Investment portfolio applications in bio',
       followers_count: 3100000,
       activity_status: 'ACTIVE_TODAY',
-      activity_label: 'Active 3 hours ago',
+      activity_label: 'Active 3 hours ago (Reels)',
       tier: 'MACRO',
       recent_posts: [{ caption: 'The single most effective sales framework to close high-ticket clients.', date: 'Today' }]
     }
@@ -483,15 +536,15 @@ const VERIFIED_CREATORS_BY_NICHE = {
   ]
 };
 
-// Niche Keywords / Synonym Dictionary for Strict Context Matching
 const NICHE_TAGS = {
+  coaches: ['coach', 'coaching', 'consultant', 'consulting', 'business coach', 'mindset', 'mentor', 'scaling', 'sales coach', 'high ticket'],
   construction: ['construction', 'builder', 'contractor', 'framing', 'carpentry', 'woodworking', 'renovation', 'plumbing', 'electrician', 'roofing', 'architecture', 'building'],
-  fitness: ['fitness', 'gym', 'workout', 'coach', 'trainer', 'bodybuilding', 'nutrition', 'weightloss', 'crossfit', 'exercise', 'physique'],
+  fitness: ['fitness', 'gym', 'workout', 'bodybuilding', 'nutrition', 'weightloss', 'crossfit', 'exercise', 'physique'],
   video_editing: ['video', 'edit', 'editor', 'premiere', 'after effects', 'davinci', 'reels editor', 'motion graphics', 'videography', 'filmmaking'],
   saas: ['saas', 'tech', 'software', 'founder', 'startup', 'indie hacker', 'ai', 'developer', 'coding', 'app', 'product manager'],
   realestate: ['real estate', 'property', 'luxury home', 'realtor', 'housing', 'mortgage', 'broker', 'condo', 'penthouse', 'villa', 'agent'],
   podcasts: ['podcast', 'podcaster', 'interview', 'clips', 'show', 'talk show', 'episode', 'host'],
-  medical: ['dentist', 'dental', 'doctor', 'clinic', 'derma', 'dermatology', 'surgeon', 'healthcare', 'chiro', 'physician', 'teeth'],
+  medical: ['dentist', 'dental', 'doctor', 'clinic', 'derma', 'dermatology', 'surgeon', 'healthcare', 'chiro', 'physician', 'teeth', 'cosmetic dentist'],
   automotive: ['car', 'auto', 'detailing', 'mechanic', 'tuning', 'supercar', 'garage', 'automotive', 'ceramic coating'],
   ecommerce: ['ecommerce', 'ecom', 'shopify', 'dropshipping', 'amazon fba', 'dtc', 'clothing brand', 'brand owner', 'apparel'],
   vietnam: ['vietnam', 'vn', 'vietnamese', 'hanoi', 'saigon', 'hcm', 'viet']
@@ -598,6 +651,145 @@ Return ONLY the raw JSON array. No markdown, no quotes around the array, no conv
   return [];
 }
 
+// Automated Budget & Demand Scoring Engine (0 - 100 points)
+function calculateBudgetScore(lead) {
+  if (!lead) {
+    return {
+      score: 50,
+      tier: 'STANDARD',
+      label: 'Standard Funnel',
+      badgeColor: 'slate',
+      signals: [],
+      metaAdsUrl: ''
+    };
+  }
+
+  let score = 0;
+  const signals = [];
+  const bio = (lead.bio || '').toLowerCase();
+  const name = (lead.full_name || '').toLowerCase();
+  const username = (lead.username || '').toLowerCase();
+  const recentPosts = typeof lead.recent_posts_json === 'string'
+    ? lead.recent_posts_json.toLowerCase()
+    : JSON.stringify(lead.recent_posts || []).toLowerCase();
+
+  const combined = `${bio} ${name} ${username} ${recentPosts}`;
+
+  // 1. High-Ticket Booking & Funnel Signals (Max 35 points)
+  const highFunnelTriggers = [
+    'calendly.com', 'tidycal', 'skool.com', 'acuityscheduling', 'hubspot', 'cal.com',
+    'oncehub', 'chilipiper', 'book a call', 'apply now', 'apply here', 'book consultation',
+    'schedule a tour', 'coaching application', 'work with me', 'dm for 1-on-1', 'dm for coaching',
+    'strategy call', 'free training', 'mastermind'
+  ];
+  const medFunnelTriggers = [
+    'linktr.ee', 'beacons.ai', 'stan.store', 'bio.link', 'taplink', 'gumroad',
+    'link in bio', 'link below', '.com', '.io', '.co', '.agency', '.dental', '.clinic', '.store'
+  ];
+
+  let funnelPts = 0;
+  for (const trig of highFunnelTriggers) {
+    if (combined.includes(trig)) {
+      funnelPts = 35;
+      signals.push(`🔥 Booking Funnel: "${trig}"`);
+      break;
+    }
+  }
+  if (funnelPts === 0) {
+    for (const trig of medFunnelTriggers) {
+      if (combined.includes(trig)) {
+        funnelPts = 20;
+        signals.push(`🔗 Active Web/Bio Link: "${trig}"`);
+        break;
+      }
+    }
+  }
+  score += funnelPts;
+
+  // 2. High-Ticket Business ICP & Monetization (Max 25 points)
+  const highTicketRoles = [
+    'founder', 'co-founder', 'ceo', 'cmo', 'saas', 'dentist', 'dr.', 'doctor',
+    'orthodontist', 'realtor', 'broker', 'luxury', 'coach', 'consultant', 'advisor',
+    'investor', 'agency owner', 'clinic', 'general contractor', 'builder'
+  ];
+  const medRoles = [
+    'business', 'studio', 'media', 'podcast host', 'speaker', 'author', 'creator', 'brand'
+  ];
+
+  let rolePts = 0;
+  for (const role of highTicketRoles) {
+    if (combined.includes(role)) {
+      rolePts = 25;
+      signals.push(`💼 High-Ticket Role: "${role}"`);
+      break;
+    }
+  }
+  if (rolePts === 0) {
+    for (const role of medRoles) {
+      if (combined.includes(role)) {
+        rolePts = 15;
+        signals.push(`📊 Commercial Creator: "${role}"`);
+        break;
+      }
+    }
+  }
+  score += (rolePts || 5);
+
+  // 3. Follower Credibility Sweet Spot (Max 20 points)
+  // 1k - 150k followers have high reply willingness + actual budget to hire video editors
+  const followers = parseInt(lead.followers_count || 0, 10);
+  if (followers >= 1000 && followers <= 150000) {
+    score += 20;
+    signals.push(`🎯 Prime Outreach Sweet Spot (${followers.toLocaleString()} followers)`);
+  } else if (followers > 150000) {
+    score += 15;
+    signals.push(`⭐ Macro / Enterprise Tier (${followers.toLocaleString()} followers)`);
+  } else if (followers >= 500) {
+    score += 8;
+  } else {
+    score += 2;
+  }
+
+  // 4. Content Recency & Demand Momentum (Max 20 points)
+  if (lead.activity_status === 'ACTIVE_TODAY' || combined.includes('today') || combined.includes('hours ago')) {
+    score += 20;
+    signals.push('⚡ Active today (High response likelihood)');
+  } else if (lead.activity_status === 'ACTIVE_THIS_WEEK' || combined.includes('yesterday') || combined.includes('days ago')) {
+    score += 15;
+    signals.push('📅 Active this week');
+  } else {
+    score += 10;
+  }
+
+  score = Math.min(100, Math.max(10, score));
+
+  let tier = 'STANDARD';
+  let label = '🌱 Standard Funnel';
+  let badgeColor = 'slate';
+
+  if (score >= 80) {
+    tier = 'VIP';
+    label = '💎 VIP Client (High Budget & Funnel)';
+    badgeColor = 'emerald';
+  } else if (score >= 60) {
+    tier = 'HIGH_POTENTIAL';
+    label = '🎯 High Potential (Verified Business)';
+    badgeColor = 'cyan';
+  }
+
+  const cleanHandle = (lead.username || '').replace(/^@/, '').trim();
+  const metaAdsUrl = `https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&q=${encodeURIComponent(cleanHandle)}`;
+
+  return {
+    score,
+    tier,
+    label,
+    badgeColor,
+    signals,
+    metaAdsUrl
+  };
+}
+
 // Master Lead Discovery Function
 async function findLeadsByKeyword(keyword, language = 'EN', count = 10, followerTier = 'ALL', activityRecency = 'ALL', settings = {}) {
   const cleanKw = (keyword || '').trim();
@@ -607,7 +799,19 @@ async function findLeadsByKeyword(keyword, language = 'EN', count = 10, follower
   if (settings && settings.gemini_api_key) {
     const aiLeads = await discoverLeadsWithGemini(cleanKw, language, count, followerTier, settings.gemini_api_key);
     if (aiLeads && aiLeads.length > 0) {
-      return aiLeads.slice(0, count);
+      return aiLeads.slice(0, count).map(l => {
+        const budget = calculateBudgetScore(l);
+        return {
+          ...l,
+          target_niche: cleanKw,
+          is_verified_live: true,
+          budget_score: budget.score,
+          budget_tier: budget.tier,
+          budget_label: budget.label,
+          budget_signals: budget.signals,
+          meta_ads_url: budget.metaAdsUrl
+        };
+      });
     }
   }
 
@@ -655,33 +859,46 @@ async function findLeadsByKeyword(keyword, language = 'EN', count = 10, follower
     }
   }
 
-  return filtered.slice(0, count).map(l => ({
-    ...l,
-    target_niche: cleanKw,
-    is_verified_live: true
-  }));
+  return filtered.slice(0, count).map(l => {
+    const budget = calculateBudgetScore(l);
+    return {
+      ...l,
+      target_niche: cleanKw,
+      is_verified_live: true,
+      budget_score: budget.score,
+      budget_tier: budget.tier,
+      budget_label: budget.label,
+      budget_signals: budget.signals,
+      meta_ads_url: budget.metaAdsUrl
+    };
+  });
 }
 
-// Generate Google X-Ray Search URL and Instagram Hashtag search URL
+// Generate Google X-Ray Search URL with Funnel Modifiers and Meta Ad Library verification
 function getSearchShortcuts(keyword, followerTier = 'ALL', activityRecency = 'ALL') {
   const clean = encodeURIComponent(keyword.trim());
   let tierExtra = '%28%22k+followers%22+OR+%22k+ng%C6%B0%E1%BB%9Di+theo+d%C3%B5i%22+OR+%22m+followers%22%29';
   if (followerTier === 'MICRO') {
-    tierExtra = '%28%221k..15k+followers%22+OR+%22k+followers%22+OR+%22k+ng%C6%B0%E1%BB%9Di+theo+d%C3%B5i%22%29';
+    tierExtra = '%28%221k..15k+followers%22+OR+%22k+followers%22%29';
   } else if (followerTier === 'MID') {
     tierExtra = '%28%2215k..75k+followers%22+OR+%22k+followers%22%29';
   } else if (followerTier === 'MACRO') {
     tierExtra = '%28%22100k..+followers%22+OR+%22m+followers%22%29';
   }
 
+  // Funnel & High-Ticket Commercial Operators
+  const funnelOperators = encodeURIComponent('("calendly.com" OR "book a call" OR "apply" OR "consultation" OR "skool.com" OR "link in bio")');
+
   return {
-    google_xray_url: `https://www.google.com/search?q=site:instagram.com+${tierExtra}+%22${clean}%22+%28%22link+in+bio%22+OR+%22DM+for%22%29`,
+    google_xray_url: `https://www.google.com/search?q=site:instagram.com+${tierExtra}+%22${clean}%22+${funnelOperators}`,
     instagram_tag_url: `https://www.instagram.com/explore/tags/${clean.replace(/\+/g, '').replace(/%20/g, '')}/`,
-    instagram_search_url: `https://www.instagram.com/explore/search/keyword/?q=${clean}`
+    instagram_search_url: `https://www.instagram.com/explore/search/keyword/?q=${clean}`,
+    meta_ads_url: `https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=ALL&q=${clean}`
   };
 }
 
 module.exports = {
+  calculateBudgetScore,
   findLeadsByKeyword,
   getSearchShortcuts
 };

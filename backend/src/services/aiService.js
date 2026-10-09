@@ -1,140 +1,281 @@
 const { db } = require('../database/db');
 const { getSettings } = require('./quotaService');
 
-// English Spintax / Phrase variation pools for Video Editing Outreach
-const EN_GREETINGS = [
-  'Hey {{name}},',
-  'Hi {{name}},',
-  'Hey {{name}} - hope your week is going great!',
-  'Hi {{name}}, quick note -'
+// Words that are NEVER a person's first name (prevents "Hi Most", "Hi Join", "Hi Creator", "Hey link")
+const NON_NAME_STOPLIST = new Set([
+  'hey', 'hi', 'hello', 'yo', 'dear', 'welcome', 'chào', 'xin',
+  'i', 'you', 'we', 'they', 'he', 'she', 'it', 'my', 'your', 'our', 'their',
+  'the', 'a', 'an', 'this', 'that', 'these', 'those', 'in', 'on', 'at', 'to',
+  'for', 'with', 'from', 'by', 'about', 'as', 'into', 'like', 'through', 'after',
+  'over', 'between', 'out', 'against', 'during', 'without', 'before', 'under',
+  'around', 'among', 'of', 'and', 'or', 'but', 'if', 'when', 'why', 'how', 'what',
+  'where', 'who', 'are', 'is', 'was', 'were', 'be', 'been', 'have', 'has', 'had',
+  'do', 'does', 'did', 'can', 'could', 'will', 'would', 'should', 'may', 'might', 'must',
+  'join', 'link', 'most', 'worked', 'working', 'looking', 'calling', 'building',
+  'scaling', 'helping', 'growing', 'making', 'creating', 'sharing', 'teaching',
+  'stop', 'watch', 'read', 'listen', 'check', 'click', 'dm', 'follow', 'subscribe',
+  'comment', 'drop', 'free', 'new', 'best', 'top', 'real', 'official', 'daily',
+  'weekly', 'modern', 'luxury', 'custom', 'global', 'local', 'digital', 'online',
+  'smart', 'fast', 'easy', 'simple', 'hard', 'big', 'small', 'high', 'low',
+  'more', 'less', 'many', 'few', 'all', 'every', 'some', 'any', 'no', 'not',
+  'never', 'always', 'just', 'only', 'also', 'very', 'really', 'so', 'too',
+  'here', 'there', 'now', 'then', 'today', 'yesterday', 'tomorrow', 'unlock', 'stream',
+  'creator', 'creators', 'founder', 'founders', 'ceo', 'coo', 'cto', 'cmo', 'cfo',
+  'owner', 'coach', 'consultant', 'expert', 'specialist', 'mentor', 'speaker',
+  'author', 'host', 'podcast', 'podcaster', 'editor', 'designer', 'developer',
+  'builder', 'contractor', 'realtor', 'broker', 'agent', 'doctor', 'dr', 'dentist',
+  'surgeon', 'lawyer', 'attorney', 'fitness', 'gym', 'workout', 'health', 'wellness',
+  'nutrition', 'diet', 'crypto', 'forex', 'trading', 'trader', 'investor', 'investing',
+  'wealth', 'finance', 'money', 'business', 'company', 'agency', 'studio', 'labs',
+  'group', 'team', 'club', 'network', 'community', 'collective', 'academy', 'institute',
+  'school', 'university', 'college', 'center', 'hub', 'lab', 'hq', 'inc', 'llc', 'ltd',
+  'co', 'corp', 'saas', 'b2b', 'b2c', 'ai', 'tech', 'software', 'app', 'platform',
+  'tool', 'tools', 'system', 'systems', 'solution', 'solutions', 'service', 'services',
+  'product', 'products', 'brand', 'brands', 'marketing', 'sales', 'growth', 'seo',
+  'ads', 'media', 'content', 'video', 'videos', 'reel', 'reels', 'short', 'shorts',
+  'clip', 'clips', 'post', 'posts', 'photo', 'photos', 'design', 'architecture',
+  'construction', 'homes', 'realty', 'estate', 'property', 'properties', 'auto',
+  'car', 'cars', 'detailing', 'shop', 'store', 'ecommerce', 'shopify', 'amazon',
+  'things', 'ways', 'tips', 'tricks', 'secrets', 'lessons', 'steps', 'rules', 'reasons',
+  'step', 'vote', 'comment', 'submit', 'start', 'upload', 'chicago', 'springfield', 'louis'
+]);
+
+// Common first names to recognize inside concatenated usernames
+const KNOWN_FIRST_NAMES = [
+  'alexander', 'christopher', 'benjamin', 'nicholas', 'jonathan', 'stephen', 'guillaume', 'shanarra',
+  'christian', 'lawrence', 'matthew', 'anthony', 'richard', 'charles', 'william', 'michael',
+  'patrick', 'gregory', 'kenneth', 'timothy', 'jeffrey', 'brandon', 'zachary', 'douglas',
+  'raymond', 'gabriel', 'bradley', 'russell', 'vincent', 'phillip', 'cameron', 'spencer',
+  'garrett', 'faheema', 'justin', 'andrew', 'joshua', 'daniel', 'robert', 'thomas', 'joseph',
+  'david', 'james', 'brian', 'kevin', 'jason', 'jacob', 'steven', 'edward', 'donald', 'george',
+  'ronald', 'nathan', 'samuel', 'dennis', 'arthur', 'jordan', 'austin', 'dylan', 'logan',
+  'albert', 'elijah', 'philip', 'eugene', 'trevor', 'julian', 'travis', 'marcus', 'carlos',
+  'martin', 'victor', 'walter', 'harold', 'gerald', 'jeremy', 'taylor', 'conner', 'connor',
+  'hunter', 'landon', 'cooper', 'parker', 'xavier', 'adrian', 'colton', 'damian', 'enrica',
+  'pieter', 'arvid', 'alex', 'ryan', 'nick', 'erik', 'eric', 'chris', 'matt', 'mark',
+  'john', 'paul', 'jack', 'luke', 'liam', 'noah', 'adam', 'kyle', 'sean', 'tane',
+  'carl', 'bryan', 'bruce', 'alan', 'juan', 'wayne', 'randy', 'mason', 'ralph', 'bobby',
+  'lukas', 'cole', 'grant', 'blake', 'chase', 'devon', 'derek', 'evan', 'cody', 'colin',
+  'miles', 'simon', 'seth', 'shane', 'brett', 'craig', 'todd', 'troy', 'chad', 'brad',
+  'greg', 'jeff', 'mike', 'dave', 'steve', 'jake', 'josh', 'tony', 'andy', 'henry',
+  'peter', 'frank', 'scott', 'larry', 'jerry', 'tyler', 'aaron', 'keith', 'roger', 'terry',
+  'jesse', 'billy', 'marco', 'lucas', 'mateo', 'diego', 'leo', 'max', 'sam', 'dan', 'ben',
+  'tom', 'tim', 'jon', 'rob', 'bob', 'jim', 'joe', 'ian', 'eli', 'jay', 'ray', 'roy',
+  'sarah', 'emily', 'jessica', 'ashley', 'amanda', 'melissa', 'nicole', 'heather',
+  'michelle', 'amber', 'megan', 'rachel', 'lauren', 'rebecca', 'laura', 'andrea', 'angela',
+  'maria', 'samantha', 'natalie', 'victoria', 'hannah', 'alexis', 'olivia', 'emma', 'sophia',
+  'isabella', 'chloe', 'grace', 'claire', 'julia', 'maya', 'elena', 'nina', 'tara', 'kelly',
+  'erin', 'katie', 'jenna', 'holly', 'brooke', 'lindsey', 'paige', 'molly', 'leah', 'monica',
+  'vanessa', 'diana', 'claudia', 'wendy', 'lisa', 'karen', 'nancy', 'sandra', 'anna'
 ];
 
-const EN_HOOKS = [
-  'Just watched your recent reel about "{{post_topic}}" - love the breakdown and how clearly you delivered that insight.',
-  'Came across your video discussing "{{post_topic}}" - the value you dropped there was super sharp.',
-  'Loved your recent post on "{{post_topic}}" - really solid delivery and message.',
-  'Stumbled on your reel about "{{post_topic}}" - your content angle is really unique.'
-];
+function capitalizeWord(w) {
+  if (!w) return '';
+  return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+}
 
-const EN_VIDEO_OBSERVATIONS = [
-  'Your content is top-tier, though I noticed the retention pacing and sound design in the first 3 seconds could be dialed in even further to keep viewers hooked till the end.',
-  'Your delivery is great, but adding dynamic motion graphics and punchy visual hooks could easily double the watch-time on these reels.',
-  'I feel with some tighter retention editing, sound fx, and bold B-roll transitions, your videos could easily pull 3x-5x the reach they deserve.'
-];
+/**
+ * Extracts a verified human first name (or "Dr. FirstName") from lead data, or returns null if brand/unknown.
+ */
+function extractSmartFirstName(lead) {
+  const username = (lead.username || '').replace(/^@/, '').toLowerCase().trim();
+  let rawFull = (lead.full_name || '').trim();
+  const rawBio = (lead.bio || '').trim();
+  const rawPosts = (lead.recent_posts_json || '').trim();
+  const combinedText = `${rawFull} ${rawBio} ${rawPosts}`;
 
-const EN_SOFT_OFFERS = [
-  'I’m a video editor specializing in high-retention short-form content. Would you be open if I edit 1 of your raw videos for free so you can see the difference in style & pacing?',
-  'I edit retention-focused shorts/reels for creators in your niche. Mind if I take 1 of your recent clips and create a 30s high-energy sample edit for you completely free?',
-  'I specialize in viral short-form editing and pacing. Would love to send over a 45s free revamped edit of your latest clip - no strings attached. Open to taking a look?'
-];
+  // 1. Check for explicit "Dr. FirstName" in title, bio, or posts (e.g. "Dr. Chris Hill", "Dr. Faheema Ismail")
+  const drTextMatch = combinedText.match(/\bDr\.?\s+([A-Z][a-z]{2,13})\b/);
+  if (drTextMatch) {
+    const drFirst = drTextMatch[1].toLowerCase();
+    if (!NON_NAME_STOPLIST.has(drFirst)) {
+      return `Dr. ${capitalizeWord(drFirst)}`;
+    }
+  }
 
-// Vietnamese Spintax fallback
-const VI_GREETINGS = [
-  'Chào {{name}} nhé,',
-  'Hi {{name}},',
-  'Chào bạn {{name}},',
-  'Hello {{name}} nha,'
-];
+  // 2. Check if username starts with "dr" + Known First Name (e.g. "drjordandavis_" -> "Dr. Jordan", "drtroypearce" -> "Dr. Troy")
+  const drUserMatch = username.match(/^dr[._]?([a-z]{3,25})/);
+  if (drUserMatch) {
+    const afterDr = drUserMatch[1];
+    for (const name of KNOWN_FIRST_NAMES) {
+      if (afterDr.startsWith(name)) {
+        return `Dr. ${capitalizeWord(name)}`;
+      }
+    }
+  }
 
-const VI_COMPLIMENTS = [
-  'Mình vừa xem video về "{{post_topic}}" của bạn, nội dung và chia sẻ rất thực tế.',
-  'Tình cờ thấy bài post gần đây bạn chia sẻ về "{{post_topic}}", góc nhìn của bạn rất sâu sắc.',
-  'Vừa xem qua bài chia sẻ "{{post_topic}}" trên profile của bạn, thấy rất nhiều điểm chạm giá trị.'
-];
+  // 3. If full_name contains "on Instagram:" or "trên Instagram:", extract the author name before it
+  const onIgMatch = rawFull.match(/^([^:•|"\n]{2,35}?)\s+(?:on|trên)\s+Instagram/i);
+  if (onIgMatch) {
+    rawFull = onIgMatch[1].trim();
+  }
 
-const VI_SOFT_CTAS = [
-  'Bên mình chuyên dựng video ngắn (Reels/TikTok) giữ chân người xem cao. Bạn có tiện để mình dựng tặng thử 1 video mẫu hoàn toàn miễn phí xem độ hiệu quả không ha?',
-  'Nếu bạn quan tâm, mình có thể gửi tóm tắt một vài mẫu video demo và case study tương tự để bạn tham khảo nhé?'
-];
+  // 4. Try extracting from clean full_name (only if it doesn't look like a post caption)
+  if (rawFull && !rawFull.startsWith('@')) {
+    const firstSegment = rawFull.split(/[|•\-–—:(\n]/)[0].trim();
+    const words = firstSegment.split(/\s+/).filter(Boolean);
+
+    const looksLikeSentence = words.length > 3 || /[#0-9$%?..."'!🚀⚡🔥‼️✨]/.test(firstSegment);
+    if (!looksLikeSentence && words.length >= 1 && words.length <= 3) {
+      const candidate = words[0].replace(/[^a-zA-ZÀ-ỹ]/g, '');
+      const lower = candidate.toLowerCase();
+      if (
+        candidate.length >= 2 &&
+        candidate.length <= 14 &&
+        !NON_NAME_STOPLIST.has(lower) &&
+        lower !== username
+      ) {
+        return capitalizeWord(candidate);
+      }
+    }
+  }
+
+  // 5. Check if bio contains "FirstName LastName |" or starts with "FirstName |" (e.g. "Tane Rontal | Cosmetic Dentist")
+  if (rawBio) {
+    const pipeNameMatch = rawBio.match(/(?:^|\.\.\.\s+|\s)([A-Z][a-z]{2,12})(?:\s+[A-Z][a-z]{2,14})?\s*\|\s*[A-Z]/);
+    if (pipeNameMatch) {
+      const candidate = pipeNameMatch[1];
+      if (!NON_NAME_STOPLIST.has(candidate.toLowerCase())) {
+        return capitalizeWord(candidate);
+      }
+    }
+  }
+
+  // 6. Try splitting username by _ or . (e.g. "guillaume_moubeche" -> "Guillaume", "shanarra_goode" -> "Shanarra")
+  const userTokens = username.split(/[._]+/).filter(Boolean);
+  if (userTokens.length >= 1) {
+    const firstToken = userTokens[0];
+    if (KNOWN_FIRST_NAMES.includes(firstToken)) {
+      return capitalizeWord(firstToken);
+    }
+  }
+
+  // 7. Check if concatenated username starts with a known first name >= 4 chars (e.g. "sarahwinterdental" -> "Sarah")
+  for (const name of KNOWN_FIRST_NAMES) {
+    if (name.length >= 4 && username.startsWith(name) && username.length > name.length) {
+      return capitalizeWord(name);
+    }
+  }
+
+  // 8. If username itself is a known first name (e.g. "henry")
+  if (KNOWN_FIRST_NAMES.includes(username)) {
+    return capitalizeWord(username);
+  }
+
+  return null;
+}
+
+/**
+ * Extracts a short, natural niche modifier that fits before "reels" / "content" (e.g. "cosmetic dentistry").
+ */
+function extractNaturalTopic(lead) {
+  const combined = `${lead.username || ''} ${lead.full_name || ''} ${lead.bio || ''} ${lead.recent_posts_json || ''}`.toLowerCase();
+
+  // Specific industry niches first (before generic words like AI)
+  const topicMap = [
+    { regex: /\bdental\b|\bdentist\b|\bcosmeticdentist\b|\borthodont\b|\bveneers\b|\bddS\b/i, label: 'cosmetic dentistry' },
+    { regex: /\bconstruction\b|\bbuilder\b|\bcontractor\b|\brenovation\b|\bremodel\b/, label: 'custom build' },
+    { regex: /\barchitect\b|\barchitecture\b|\binterior\b|\bvilla\b/, label: 'architecture & design' },
+    { regex: /\breal estate\b|\brealtor\b|\bproperty\b|\bluxury homes\b|\bbroker\b/, label: 'real estate' },
+    { regex: /\bdetailing\b|\bceramic coating\b|\bppf\b|\bautodetailing\b/, label: 'auto detailing' },
+    { regex: /\bfitness\b|\bgym\b|\bworkout\b|\bphysique\b|\bpersonal trainer\b/, label: 'fitness' },
+    { regex: /\bpodcast\b|\bepisode\b|\binterview\b/, label: 'podcast' },
+    { regex: /\becommerce\b|\bshopify\b|\bdtc\b/, label: 'e-commerce' },
+    { regex: /\bsaas\b|\bindiesaas\b|\bmrr\b|\bbuildinpublic\b|\bdevtools\b/, label: 'SaaS' },
+    { regex: /\bai\b|\bartificial intelligence\b|\bautomation\b/, label: 'AI & automation' },
+    { regex: /\bmarketing\b|\bagency\b|\blead gen\b|\bseo\b/, label: 'marketing' }
+  ];
+
+  for (const item of topicMap) {
+    if (item.regex.test(combined)) {
+      return item.label;
+    }
+  }
+
+  return null;
+}
+
+function detectEnglish(text) {
+  if (!text) return true;
+  // Strip Google UI Vietnamese metadata (e.g. "160 lượt thích · 2 tháng trước · người theo dõi")
+  const cleaned = text
+    .replace(/lượt thích|tháng trước|ngày trước|tuần trước|năm trước|giờ trước|phút trước|người theo dõi|bài viết|trên instagram/gi, '');
+  const viRegex = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i;
+  return !viRegex.test(cleaned);
+}
 
 function getRandomItem(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function detectEnglish(text) {
-  if (!text) return true; // Default to English for international creators
-  // Simple heuristic for Vietnamese diacritics
-  const viRegex = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i;
-  return !viRegex.test(text);
-}
-
+/**
+ * Direct, peer-to-peer conversion copywriting generator (25-38 words, zero AI fluff).
+ */
 function generateAlgorithmicDraft(lead, settings) {
-  const rawName = (lead.full_name || lead.username).replace(/[@|•\-_].*/g, '').trim();
-  const firstName = rawName.split(' ')[0] || lead.username;
-  let posts = [];
-  try {
-    posts = JSON.parse(lead.recent_posts_json || '[]');
-  } catch (e) {
-    posts = [];
-  }
-
+  const firstName = extractSmartFirstName(lead);
+  const topic = extractNaturalTopic(lead);
   const isEnglish = detectEnglish((lead.bio || '') + ' ' + (lead.full_name || ''));
 
   if (isEnglish) {
-    let postTopic = 'your latest video breakdown';
-    if (posts.length > 0 && posts[0].caption) {
-      const rawCaption = posts[0].caption.replace(/#\w+/g, '').trim();
-      postTopic = rawCaption.length > 50 ? rawCaption.substring(0, 47) + '...' : rawCaption;
-    }
+    const nameGreeting = firstName ? `Hey ${firstName} —` : `Hey —`;
+    const altGreeting = firstName ? `Hi ${firstName},` : `Quick question —`;
+    const reelPhrase = topic ? `your recent ${topic} reels` : `your recent reels`;
+    const contentPhrase = topic ? `your ${topic} content` : `your recent content`;
 
-    const greeting = getRandomItem(EN_GREETINGS).replace('{{name}}', firstName);
-    const hook = getRandomItem(EN_HOOKS).replace('{{post_topic}}', postTopic);
-    const observation = getRandomItem(EN_VIDEO_OBSERVATIONS);
-    const offer = getRandomItem(EN_SOFT_OFFERS);
+    const templates = [
+      `${nameGreeting} saw ${reelPhrase}, solid stuff.\n\nAre you guys handling all your short-form editing in-house right now? Happy to cut a quick 30s sample from one of your existing clips (free) so you can compare the pacing.`,
 
-    return `${greeting}\n\n${hook} ${observation}\n\n${offer}`;
+      `${nameGreeting} been checking out ${contentPhrase}.\n\nQuick question: are you open to offloading your reel editing to save time? I'd love to put together 1 free test cut from your existing footage so you can judge the quality yourself.`,
+
+      `${altGreeting} saw ${reelPhrase}.\n\nI help creators & brands turn talking-head clips into high-retention reels. Mind if I send over a quick 30s re-edit of one of your videos so you can see the difference in pacing?`,
+
+      `${nameGreeting} loved ${reelPhrase}.\n\nHad a couple visual hook ideas that could boost watch time on your videos. Open to seeing a quick 30s test edit on one of your existing clips?`
+    ];
+
+    return getRandomItem(templates);
   } else {
-    let postTopic = 'chia sẻ kinh nghiệm thực tế của bạn';
-    if (posts.length > 0 && posts[0].caption) {
-      const rawCaption = posts[0].caption;
-      postTopic = rawCaption.length > 55 ? rawCaption.substring(0, 52) + '...' : rawCaption;
-    }
+    const nameGreeting = firstName ? `Chào ${firstName},` : `Chào bạn,`;
+    const topicPhrase = topic ? ` về ${topic}` : '';
 
-    const greeting = getRandomItem(VI_GREETINGS).replace('{{name}}', firstName);
-    const compliment = getRandomItem(VI_COMPLIMENTS).replace('{{post_topic}}', postTopic);
-    const cta = getRandomItem(VI_SOFT_CTAS);
+    const viTemplates = [
+      `${nameGreeting} thấy kênh mình đang xây chuỗi Reels${topicPhrase} khá chất lượng.\n\nHiện bên bạn đã có editor riêng chưa hay vẫn tự dựng? Nếu tiện mình xin phép dựng thử 1 clip 30s (miễn phí) từ video sẵn có để bạn xem thử style nhé?`,
 
-    return `${greeting}\n\n${compliment}\n\n${cta}`;
+      `${nameGreeting} mình có xem qua các video gần đây trên kênh của bạn.\n\nBên mình chuyên dựng Reels/Shorts tối ưu giữ chân người xem (retention). Bạn có mở lòng nếu mình cắt tặng 1 bản demo 30s từ video cũ của bạn để bạn đối chiếu thử không?`
+    ];
+
+    return getRandomItem(viTemplates);
   }
 }
 
 async function generateGeminiAIDraft(lead, settings) {
-  const apiKey = settings.gemini_api_key;
+  const apiKey = settings ? settings.gemini_api_key : '';
   if (!apiKey || apiKey.trim() === '') {
     return generateAlgorithmicDraft(lead, settings);
   }
 
-  let posts = [];
-  try {
-    posts = JSON.parse(lead.recent_posts_json || '[]');
-  } catch (e) {
-    posts = [];
-  }
-
-  const postsSummary = posts.map((p, idx) => `Post ${idx + 1}: ${p.caption} (${p.date || 'recent'})`).join('\n');
+  const firstName = extractSmartFirstName(lead);
+  const topic = extractNaturalTopic(lead);
   const isEnglish = detectEnglish((lead.bio || '') + ' ' + (lead.full_name || ''));
 
   const systemInstruction = `
-You are an expert cold outreach specialist and high-converting video editor pitching to English-speaking creators, founders, and coaches on Instagram.
+You are an elite B2B conversion copywriter writing an Instagram cold DM for a high-ticket short-form video editor / creative partner.
 
-Target Lead Info:
-- Name/Handle: ${lead.full_name || lead.username} (@${lead.username})
-- Bio: ${lead.bio || 'N/A'}
-- Recent Posts/Videos:
-${postsSummary || 'No posts data'}
+Prospect Details:
+- Handle: @${lead.username}
+- Verified First Name: ${firstName || 'NONE (This is a brand/clinic/company account or name is unknown — start with "Hey —" without a name)'}
+- Core Topic/Niche: ${topic || 'short-form content'}
+- Context Snippet: ${(lead.bio || '').slice(0, 180)}
+- Offer: ${settings.outreach_service || 'High-retention short-form video editing (Reels/Shorts)'}
 
-Sender Offer:
-- Niche: High-retention Video Editing (Reels, TikToks, Shorts, YouTube)
-- Specific Value: ${settings.outreach_service || 'Retention-focused video editing, visual hooks, punchy sound design & dynamic pacing'}
-- Tone: ${settings.outreach_tone || 'Casual, peer-to-peer, respectful, non-salesy, punchy'}
-
-CRITICAL RULES:
-1. Language: ${isEnglish ? 'NATURAL CASUAL ENGLISH (US/UK creator tone)' : 'Natural conversational Vietnamese'}.
-2. Length: Under 55-65 words total (3-4 short punchy lines max).
-3. The Hook: Reference ONE specific insight, joke, or topic from their latest post/bio to prove you actually watched it.
-4. The Bridge/Value: Briefly mention how their great content could get even higher retention with professional pacing/sound design/hooks.
-5. The Soft CTA: Offer ONE free sample edit (e.g., "Mind if I edit 1 of your clips for free just to show you the difference?"). NO links, NO pricing, NO aggressive sales pitch.
-6. Return ONLY the raw DM message text. No quotes, no placeholders, no explanations.
+STRICT COPYWRITING RULES:
+1. Language: ${isEnglish ? 'Natural, casual US peer-to-peer English' : 'Natural, concise business Vietnamese'}.
+2. ULTRA-SHORT: 25 to 38 words MAXIMUM. 2 short paragraphs separated by a blank line.
+3. NO FAKE FLATTERY: Never use AI clichés like "stumbled upon", "came across", "super sharp", "top-tier", "dialed in", "hope your week is going great", "no strings attached".
+4. NO QUOTED TITLES: Never paste their post caption in quotation marks.
+5. DIRECT TO THE POINT:
+   - Line 1: Casual greeting + brief nod to their ${topic || 'recent'} reels.
+   - Line 2: Ask if they handle short-form editing in-house or are open to seeing a quick 30s free test cut using one of their existing clips.
+6. Return ONLY the raw DM text. No quotes, no markdown, no links.
 `;
 
   try {
@@ -144,14 +285,13 @@ CRITICAL RULES:
       body: JSON.stringify({
         contents: [{ parts: [{ text: systemInstruction }] }],
         generationConfig: {
-          temperature: 0.8,
-          maxOutputTokens: 250
+          temperature: 0.7,
+          maxOutputTokens: 150
         }
       })
     });
 
     if (!response.ok) {
-      console.warn('Gemini API returned error, falling back to algorithmic engine:', response.statusText);
       return generateAlgorithmicDraft(lead, settings);
     }
 
@@ -169,6 +309,7 @@ CRITICAL RULES:
 
 module.exports = {
   generateGeminiAIDraft,
-  generateAlgorithmicDraft
+  generateAlgorithmicDraft,
+  extractSmartFirstName,
+  extractNaturalTopic
 };
-

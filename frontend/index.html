@@ -113,6 +113,7 @@
       <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
         <select id="filterFollowerTier" class="form-select" style="padding: 6px 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-secondary); border-radius: var(--radius-md); font-size: 0.8rem;">
           <option value="ALL">👥 Followers: All Tiers</option>
+          <option value="HIGH_BUDGET">💎 VIP High Budget (Score ≥ 70)</option>
           <option value="OVER_1K" selected>🛡️ Qualified: > 1,000 Followers</option>
           <option value="MICRO">🌱 Micro (1K - 15K)</option>
           <option value="MID">🎯 Mid-Tier (15K - 75K)</option>
@@ -122,6 +123,7 @@
 
         <select id="sortLeads" class="form-select" style="padding: 6px 12px; background: var(--bg-input); border: 1px solid var(--border-subtle); color: var(--text-secondary); border-radius: var(--radius-md); font-size: 0.8rem;">
           <option value="DEFAULT">⚡ Sort: Default</option>
+          <option value="BUDGET_DESC">💎 Budget Score: High ➔ Low</option>
           <option value="FOLLOWERS_DESC">📈 Followers: High ➔ Low</option>
           <option value="FOLLOWERS_ASC">📉 Followers: Low ➔ High</option>
         </select>
@@ -178,17 +180,15 @@
             </div>
           </div>
 
-          <!-- Niche Preset Shortcuts -->
+          <!-- Niche Preset Shortcuts (High Budget & Demand ICPs) -->
           <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button type="button" class="tab-btn shortcut-pill" data-kw="saas founder" style="font-size: 0.75rem; padding: 4px 10px; background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.4); border-radius: 20px; color: var(--accent-cyan);">💎 💻 SaaS & AI Founders</button>
+            <button type="button" class="tab-btn shortcut-pill" data-kw="business coach" style="font-size: 0.75rem; padding: 4px 10px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 20px; color: #34d399;">💎 📈 High-Ticket Coaches</button>
+            <button type="button" class="tab-btn shortcut-pill" data-kw="cosmetic dentist" style="font-size: 0.75rem; padding: 4px 10px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 20px; color: #c084fc;">💎 🦷 Cosmetic Dentists</button>
+            <button type="button" class="tab-btn shortcut-pill" data-kw="luxury real estate" style="font-size: 0.75rem; padding: 4px 10px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 20px; color: #fbbf24;">💎 🏡 Luxury Real Estate</button>
+            <button type="button" class="tab-btn shortcut-pill" data-kw="podcast clips" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🎙️ Commercial Podcasts</button>
             <button type="button" class="tab-btn shortcut-pill" data-kw="construction" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🏗️ Construction & Trades</button>
-            <button type="button" class="tab-btn shortcut-pill" data-kw="fitness coach" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🏋️ Fitness & Gym</button>
-            <button type="button" class="tab-btn shortcut-pill" data-kw="podcast clips" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🎙️ Podcasts</button>
-            <button type="button" class="tab-btn shortcut-pill" data-kw="real estate" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🏡 Real Estate</button>
-            <button type="button" class="tab-btn shortcut-pill" data-kw="saas founder" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">💻 SaaS & Tech</button>
-            <button type="button" class="tab-btn shortcut-pill" data-kw="cosmetic dentist" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🩺 Dental & Med</button>
-            <button type="button" class="tab-btn shortcut-pill" data-kw="car detailing" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🏎️ Automotive</button>
-            <button type="button" class="tab-btn shortcut-pill" data-kw="shopify brand" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🛍️ E-commerce</button>
-            <button type="button" class="tab-btn shortcut-pill" data-kw="video editor" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🎬 Video Creators</button>
+            <button type="button" class="tab-btn shortcut-pill" data-kw="fitness coach" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🏋️ Fitness Coaches</button>
             <button type="button" class="tab-btn shortcut-pill" data-kw="content creator vietnam" style="font-size: 0.75rem; padding: 4px 10px; background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: 20px;">🇻🇳 VN Creators</button>
           </div>
 
@@ -222,18 +222,21 @@
           <!-- Shortcuts to live Instagram Searches with Extension Grabber -->
           <div id="searchShortcutsContainer" style="background: rgba(6, 182, 212, 0.08); border: 1px dashed rgba(6, 182, 212, 0.3); border-radius: 8px; padding: 12px 14px; margin-top: 4px;">
             <div style="font-size: 0.775rem; color: var(--accent-cyan); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
-              <span>⚡</span> 1-Click Extension Grabber (Quét 50 - 100 Leads Thật):
+              <span>⚡</span> 1-Click Funnel Search & Extension Grabber (Lead Thật 100%):
             </div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
               <a href="#" id="linkGoogleXray" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.775rem;">
-                🌐 Mở Google X-Ray Search (Extension tự gom 50+ leads) ↗
+                🌐 Mở Google X-Ray Funnel (Extension tự quét 50+ leads) ↗
+              </a>
+              <a href="#" id="linkMetaAds" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.775rem; border-color: rgba(59, 130, 246, 0.4); color: #60a5fa;">
+                📢 Meta Ad Library (Soi ai đang trả tiền chạy ads) ↗
               </a>
               <a href="#" id="linkIgTag" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.775rem;">
                 📸 Mở Instagram Hashtag Explore ↗
               </a>
             </div>
             <div style="font-size: 0.725rem; color: var(--text-muted); margin-top: 6px; line-height: 1.4;">
-              💡 <em>Mẹo: Khi bấm vào Google X-Ray hoặc Instagram, Extension sẽ hiện nút nổi <strong>"📥 Grab All Leads to CRM"</strong> ở góc dưới để gom 50+ tài khoản vào CRM chỉ với 1 click!</em>
+              💡 <em>Mẹo Funnel: Bấm vào Google X-Ray để tìm profile có booking Calendly / Link In Bio. Mở Meta Ad Library để xác nhận 100% client có ngân sách marketing dồi dào!</em>
             </div>
           </div>
         </form>
