@@ -162,22 +162,23 @@ function showAssistantWidget(username, message) {
   overlay.id = 'ig-outreach-assistant-widget';
   overlay.style.cssText = `
     position: fixed;
-    bottom: 24px;
+    top: 70px;
     right: 24px;
-    width: 360px;
+    width: 350px;
     background: #0f172a;
     color: #f8fafc;
     border: 1px solid #38bdf8;
     border-radius: 16px;
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.75), 0 0 20px rgba(56, 189, 248, 0.2);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.85), 0 0 25px rgba(56, 189, 248, 0.25);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-size: 13px;
-    z-index: 99999999;
-    padding: 16px;
+    z-index: 2147483647;
+    padding: 14px 16px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    animation: igWidgetFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    gap: 10px;
+    animation: igWidgetFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
   `;
 
   if (!document.getElementById('ig-widget-styles')) {
@@ -185,7 +186,7 @@ function showAssistantWidget(username, message) {
     styleTag.id = 'ig-widget-styles';
     styleTag.textContent = `
       @keyframes igWidgetFadeIn {
-        from { opacity: 0; transform: translateY(15px) scale(0.96); }
+        from { opacity: 0; transform: translateY(-10px) scale(0.96); }
         to { opacity: 1; transform: translateY(0) scale(1); }
       }
       .ig-widget-btn {
@@ -218,76 +219,217 @@ function showAssistantWidget(username, message) {
         background: #334155;
         color: #ffffff;
       }
+      .ig-icon-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border: none;
+        color: #cbd5e1;
+        border-radius: 6px;
+        padding: 3px 8px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .ig-icon-btn:hover {
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+      }
+      .ig-icon-btn-close:hover {
+        background: rgba(239, 68, 68, 0.3);
+        color: #ef4444;
+      }
     `;
     document.head.appendChild(styleTag);
   }
 
-  overlay.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 16px;">⚡</span>
-        <div>
-          <strong style="color: #38bdf8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; display: block;">IG Safe Outreach Assistant</strong>
-          <span style="font-weight: 700; color: #ffffff; font-size: 13px;">@${escapeHtml(username)}</span>
+  // Expanded View Content
+  const expandedHtml = `
+    <div id="ig-widget-expanded" style="display: flex; flex-direction: column; gap: 10px;">
+      <div id="ig-widget-header" style="display: flex; justify-content: space-between; align-items: center; cursor: grab; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 16px;">⚡</span>
+          <div>
+            <strong style="color: #38bdf8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; display: block;">IG Outreach Assistant</strong>
+            <span style="font-weight: 700; color: #ffffff; font-size: 13px;">@${escapeHtml(username)}</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 5px; align-items: center;">
+          <button class="ig-icon-btn" id="ig-widget-minimize" title="Thu nhỏ khung để nhắn tin (Phím tắt: Esc)">
+            ➖ Thu nhỏ
+          </button>
+          <button class="ig-icon-btn ig-icon-btn-close" id="ig-widget-close" title="Đóng hẳn widget">
+            ✕
+          </button>
         </div>
       </div>
-      <button id="ig-widget-close" style="background: none; border: none; color: #64748b; font-size: 18px; cursor: pointer; padding: 2px 6px;">&times;</button>
+
+      <div style="background: #090d16; border: 1px solid #1e293b; border-radius: 10px; padding: 10px; font-size: 12px; line-height: 1.4; color: #cbd5e1; max-height: 100px; overflow-y: auto; white-space: pre-wrap;" id="ig-widget-msg">${escapeHtml(message)}</div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <button class="ig-widget-btn ig-widget-btn-secondary" id="ig-btn-copy">
+          📋 Copy Text
+        </button>
+        <button class="ig-widget-btn ig-widget-btn-secondary" id="ig-btn-fill">
+          ✍️ Tự điền tin nhắn
+        </button>
+      </div>
+
+      <button class="ig-widget-btn ig-widget-btn-primary" id="ig-btn-send" style="width: 100%;">
+        🚀 Bấm Nhắn tin & Điền (1-Click)
+      </button>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #64748b; padding-top: 2px;">
+        <span style="cursor: pointer; color: #38bdf8;" id="ig-quick-hide-link">👁️ Ẩn widget để gõ tin nhắn (Esc)</span>
+        <span>Kéo header để di chuyển</span>
+      </div>
     </div>
 
-    <div style="background: #090d16; border: 1px solid #1e293b; border-radius: 10px; padding: 10px; font-size: 12px; line-height: 1.4; color: #cbd5e1; max-height: 110px; overflow-y: auto; white-space: pre-wrap;" id="ig-widget-msg">${escapeHtml(message)}</div>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-      <button class="ig-widget-btn ig-widget-btn-secondary" id="ig-btn-copy">
-        📋 Copy Text
-      </button>
-      <button class="ig-widget-btn ig-widget-btn-secondary" id="ig-btn-fill">
-        ✍️ Auto-Fill
-      </button>
+    <!-- Minimized Pill View -->
+    <div id="ig-widget-minimized" style="display: none; align-items: center; justify-content: space-between; width: 100%; cursor: pointer;">
+      <div style="display: flex; align-items: center; gap: 8px;" id="ig-pill-restore" title="Bấm để mở lại khung trợ lý (hoặc bấm Esc)">
+        <span style="font-size: 14px;">⚡</span>
+        <strong style="color: #38bdf8; font-size: 12px;">@${escapeHtml(username)}</strong>
+        <span style="color: #94a3b8; font-size: 11px;">(Bấm để mở lại)</span>
+      </div>
+      <button class="ig-icon-btn ig-icon-btn-close" id="ig-pill-close" style="padding: 2px 6px; font-size: 11px;" title="Đóng hẳn">&times;</button>
     </div>
-
-    <button class="ig-widget-btn ig-widget-btn-primary" id="ig-btn-send" style="width: 100%;">
-      🚀 Click Message / Send
-    </button>
   `;
 
+  overlay.innerHTML = expandedHtml;
   document.body.appendChild(overlay);
   activeOverlay = overlay;
 
-  // Event Listeners
-  document.getElementById('ig-widget-close').addEventListener('click', () => {
+  const expandedView = document.getElementById('ig-widget-expanded');
+  const minimizedView = document.getElementById('ig-widget-minimized');
+
+  function minimizeWidget() {
+    expandedView.style.display = 'none';
+    minimizedView.style.display = 'flex';
+    overlay.style.width = 'auto';
+    overlay.style.padding = '8px 12px';
+    overlay.style.borderRadius = '24px';
+    overlay.style.border = '1px solid #06b6d4';
+  }
+
+  function expandWidget() {
+    minimizedView.style.display = 'none';
+    expandedView.style.display = 'flex';
+    overlay.style.width = '350px';
+    overlay.style.padding = '14px 16px';
+    overlay.style.borderRadius = '16px';
+    overlay.style.border = '1px solid #38bdf8';
+  }
+
+  window.igOutreachMinimizeWidget = minimizeWidget;
+  window.igOutreachExpandWidget = expandWidget;
+
+  // Toggle with Escape key
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      if (expandedView.style.display !== 'none') {
+        minimizeWidget();
+      } else {
+        expandWidget();
+      }
+    }
+  };
+  window.addEventListener('keydown', handleKeyDown);
+
+  // Close handlers
+  const closeAll = () => {
+    window.removeEventListener('keydown', handleKeyDown);
     overlay.remove();
     activeOverlay = null;
     if (chrome.storage && chrome.storage.local) {
       chrome.storage.local.remove('pendingDispatch');
     }
-  });
+  };
 
-  document.getElementById('ig-btn-copy').addEventListener('click', async () => {
+  document.getElementById('ig-widget-close').onclick = closeAll;
+  document.getElementById('ig-pill-close').onclick = (e) => {
+    e.stopPropagation();
+    closeAll();
+  };
+
+  // Minimize handlers
+  document.getElementById('ig-widget-minimize').onclick = minimizeWidget;
+  document.getElementById('ig-quick-hide-link').onclick = minimizeWidget;
+  document.getElementById('ig-pill-restore').onclick = expandWidget;
+
+  // Copy button
+  document.getElementById('ig-btn-copy').onclick = async () => {
     try {
       await navigator.clipboard.writeText(message);
       const btn = document.getElementById('ig-btn-copy');
-      btn.textContent = '✓ Copied!';
+      btn.textContent = '✓ Đã sao chép!';
       btn.style.color = '#34d399';
       setTimeout(() => {
         btn.innerHTML = '📋 Copy Text';
         btn.style.color = '#94a3b8';
       }, 2000);
     } catch (e) {}
-  });
+  };
 
-  document.getElementById('ig-btn-fill').addEventListener('click', () => {
-    tryFillMessageBox(message);
-  });
+  // Auto fill button
+  document.getElementById('ig-btn-fill').onclick = () => {
+    const filled = tryFillMessageBox(message);
+    if (filled) {
+      setTimeout(minimizeWidget, 1000);
+    }
+  };
 
-  document.getElementById('ig-btn-send').addEventListener('click', () => {
+  // Send / Message button
+  document.getElementById('ig-btn-send').onclick = () => {
     const messageBtn = findProfileMessageButton();
     if (messageBtn) {
       simulateClick(messageBtn);
-      setTimeout(() => { tryFillMessageBox(message); }, 1500);
+      setTimeout(() => {
+        const filled = tryFillMessageBox(message);
+        if (filled) setTimeout(minimizeWidget, 1000);
+      }, 1500);
       return;
     }
-    tryFillMessageBox(message, true);
-  });
+    const filled = tryFillMessageBox(message, false);
+    if (filled) setTimeout(minimizeWidget, 1000);
+  };
+
+  // Make widget draggable so user can move it anywhere
+  const header = document.getElementById('ig-widget-header');
+  let isDragging = false;
+  let startX, startY, initialLeft, initialTop;
+
+  header.onmousedown = (e) => {
+    if (e.target.tagName === 'BUTTON') return;
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    const rect = overlay.getBoundingClientRect();
+    initialLeft = rect.left;
+    initialTop = rect.top;
+    overlay.style.right = 'auto';
+    overlay.style.bottom = 'auto';
+    overlay.style.left = `${initialLeft}px`;
+    overlay.style.top = `${initialTop}px`;
+    header.style.cursor = 'grabbing';
+  };
+
+  window.onmousemove = (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    overlay.style.left = `${Math.max(10, Math.min(window.innerWidth - 360, initialLeft + dx))}px`;
+    overlay.style.top = `${Math.max(10, Math.min(window.innerHeight - 100, initialTop + dy))}px`;
+  };
+
+  window.onmouseup = () => {
+    if (isDragging) {
+      isDragging = false;
+      header.style.cursor = 'grab';
+    }
+  };
 }
 
 function escapeHtml(text) {
@@ -344,6 +486,11 @@ function pollAndFillChat(message) {
     if (filled) {
       clearInterval(chatInterval);
       console.log('[IG Outreach] Successfully filled message input!');
+      if (typeof window.igOutreachMinimizeWidget === 'function') {
+        setTimeout(() => {
+          window.igOutreachMinimizeWidget();
+        }, 1200);
+      }
     }
     if (chatAttempts > 25) {
       clearInterval(chatInterval);
